@@ -15,16 +15,36 @@ What we want to do:
 - Visibility 10 m
 - Visibility 10 m
 
-- REMOVE ALL DATA POINTS WHERE FUNCTION DAY = N0
+
+- REMOVE ALL DATA POINTS WHERE FUNCTION DAY = NO
 
 
 Want to add:
+- Weekend variable
+- Try changing hours to 6 hour blocks and sum bike counts and seeing if that improves (compare using BIC value)
+- Try splines
+- Temperature change to Max and Min for day
+- Humidity change to be consistent with temperature
 
+
+** Idea make time that is before 4 am be that of last day
+
+Variables in Model 
+- Date (Random Effect)
+- Hour/Time Chunk
+- Max/Min Temp
+- Max/Min Humidity
+- Windspeed
+- Make Rain binary
+- Make Snow binary
 - Weekend
+- Seasons 
+- Holiday
 
 
 
 ```{r}
 bike = read.csv("SeoulBikeData.csv")
+plot(bike$Hour, bike$Rented.Bike.Count)
 ```
 
