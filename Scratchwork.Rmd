@@ -35,8 +35,7 @@ Variables in Model
 - Max/Min Temp
 - Max/Min Humidity
 - Windspeed
-- Make Rain binary
-- Make Snow binary
+- Make Rain binary and Snow binary and combine
 - Weekend
 - Seasons 
 - Holiday
