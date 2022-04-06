@@ -3,11 +3,18 @@ title: "Notes"
 author: "Elena Kharitonova"
 date: "4/4/2022"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+```{r message=FALSE}
+library(tidyverse)
+```
+
 
 What we want to do:
 - Remove Solar Radiation 
@@ -29,21 +36,102 @@ Want to add:
 
 ** Idea make time that is before 4 am be that of last day
 
-Variables in Model 
-- Date (Random Effect)
-- Hour/Time Chunk
-- Max/Min Temp
-- Max/Min Humidity
-- Windspeed
-- Make Rain binary and Snow binary and combine
-- Weekend
-- Seasons 
-- Holiday
+Variables in Model:     
+
+* Date (Random Effect)     
+* Hour/Time Chunk     
+* Max/Min Temp     
+* Max/Min Humidity     
+* Windspeed     
+* Make Rain binary and Snow binary and combine     
+* Weekend     
+* Seasons      
+* Holiday     
+
+# Seoul bike data 
+
+## Data processing 
+
+Load in Seoul bike data
+```{r message=FALSE}
+seoul <- read_csv("SeoulBikeData.csv")
+dim(seoul)
+spec(seoul)
+```
+
+Non-functioning days have zero bike counts:
+```{r}
+table(seoul$`Functioning Day`)
+any(seoul$`Rented Bike Count`[seoul$`Functioning Day` == "No"] != 0)
+```
+
+We assume that this is when the bike system was not operating, so we will remove this from our data.
+```{r}
+seoul <- seoul %>% 
+  filter(`Functioning Day` == "Yes")
+```
+
+We want to combine rain and snow into a single binary variable:     
+```{r}
+seoul <- seoul %>% 
+  mutate(`Rain or snow` = ifelse(`Rainfall(mm)` > 0 | `Snowfall (cm)` > 0, 1, 0))
+table(seoul$`Rain or snow`)
+```
+
+We next want to add a "weekend" variable. We can convert the `Date` column into an R Date object and use the `weekdays()` function to help us do this.     
+```{r}
+seoul <- seoul %>% 
+  mutate(Date = as.Date(Date, format = "%d/%m/%Y")) %>% 
+  mutate(Weekend = ifelse(weekdays(Date) == "Saturday" | weekdays(Date) == "Sunday", 1, 0))
+table(seoul$Weekend)
+```
+
+Format `Holiday` column as 0 and 1 to match other binary variables     
+```{r}
+seoul <- seoul %>% 
+  mutate(Holiday = ifelse(Holiday == "Holiday", 1, 0))
+```
 
 
+
+### Hourly version
 
 ```{r}
-bike = read.csv("SeoulBikeData.csv")
-plot(bike$Hour, bike$Rented.Bike.Count)
+ggplot(seoul, aes(x = Hour, y = `Rented Bike Count`)) + geom_point(shape = 21)
+```
+
+Keep only the columns that will be used as variables in our model:     
+
+* Date (Random Effect)     
+* Hour   
+* Temp (C)    
+* Humidity (%)     
+* Windspeed (m/s)    
+* Rain or snow 
+* Weekend     
+* Seasons      
+* Holiday     
+
+```{r}
+seoul_hourly <- seoul %>% 
+  select(Date, Hour, `Temperature(C)`, `Humidity(%)`, `Wind speed (m/s)`,
+         `Rain or snow`, Weekend, Seasons, Holiday)
+```
+
+
+
+### Time chunk version
+
+# London bike data
+
+```{r}
+
+```
+
+
+# DC bike data
+
+```{r}
+
 ```
 
