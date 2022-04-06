@@ -13,6 +13,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r message=FALSE}
 library(tidyverse)
+library(lme4)
+library(lmerTest)
+library(MuMIn)
 ```
 
 
@@ -126,7 +129,7 @@ Keep only the columns that will be used as variables in our model:
 
 ```{r}
 seoul_hourly <- seoul %>% 
-  select(Date, Hour, Min_T, Max_T, Min_H, Max_H, `Wind speed (m/s)`,
+  select(`Rented Bike Count`, Date, Hour, Min_T, Max_T, Min_H, Max_H, `Wind speed (m/s)`,
          `Rain or snow`, Weekend, Seasons, Holiday)
 ```
 
@@ -136,9 +139,30 @@ seoul_hourly <- seoul %>%
 
 Try Making Time into 8 Hour Chunks
 ```{r}
-seoul_hourly$hour_chunks = cut(seoul_hourly$Hour, c(0,8,16,24), right = FALSE)
+seoul$hour_chunks = cut(seoul_hourly$Hour, c(0,8,16,24), right = FALSE)
 ```
 
+```{r}
+seoul_hourly_chunks <- seoul %>% 
+  select(`Rented Bike Count`, Date, hour_chunks, Min_T, Max_T, Min_H, Max_H, `Wind speed (m/s)`,
+         `Rain or snow`, Weekend, Seasons, Holiday)
+```
+
+
+#### Compare Models
+```{r}
+hourly = lmer(`Rented Bike Count` ~ factor(Hour) + Min_T + Max_T + Min_H + Max_H + `Wind speed (m/s)` +
+         `Rain or snow` + Weekend + Seasons + Holiday + (1|Date), data = seoul_hourly, REML = T)
+
+r.squaredGLMM(hourly)
+
+chunk = lmer(`Rented Bike Count` ~ hour_chunks + Min_T + Max_T + Min_H + Max_H + `Wind speed (m/s)` +
+         `Rain or snow` + Weekend + Seasons + Holiday + (1|Date), data = seoul_hourly_chunks, REML = T)
+
+r.squaredGLMM(chunk)
+
+
+```
 
 
 # London bike data
