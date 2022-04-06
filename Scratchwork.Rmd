@@ -139,13 +139,14 @@ seoul_hourly <- seoul %>%
 
 Try Making Time into 8 Hour Chunks
 ```{r}
-seoul$hour_chunks = cut(seoul_hourly$Hour, c(0,8,16,24), right = FALSE)
-```
+seoul$hour_chunks = cut(seoul$Hour, c(0,8,16,24), right = FALSE)
 
-```{r}
 seoul_hourly_chunks <- seoul %>% 
   select(`Rented Bike Count`, Date, hour_chunks, Min_T, Max_T, Min_H, Max_H, `Wind speed (m/s)`,
          `Rain or snow`, Weekend, Seasons, Holiday)
+
+
+seoul_hourly_chunks = seoul %>% group_by(Date, hour_chunks, Max_T, Min_T, Min_H, Max_H, Seasons, Holiday, Weekend) %>% summarise(`Rented Bike Count` = sum(`Rented Bike Count`), `Wind speed (m/s)` = mean(`Wind speed (m/s)`),`Rain or snow` = if(sum(`Rain or snow`)>0){1} else {0})
 ```
 
 
@@ -163,7 +164,7 @@ r.squaredGLMM(chunk)
 
 
 ```
-
+So chunks seem to perform better bc larger R^2
 
 # London bike data
 
