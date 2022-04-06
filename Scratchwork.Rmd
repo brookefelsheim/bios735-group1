@@ -92,6 +92,18 @@ seoul <- seoul %>%
   mutate(Holiday = ifelse(Holiday == "Holiday", 1, 0))
 ```
 
+Make max or min of temperature for each day
+```{r}
+temp = seoul %>% group_by(Date) %>% summarise(Min_T = min(`Temperature(C)`), Max_T = max(`Temperature(C)`))
+seoul = inner_join(seoul,temp, by = "Date")
+```
+
+Make max or min of Humidity for each day
+```{r}
+hum = seoul %>% group_by(Date) %>% summarise(Min_H = min(`Humidity(%)`), Max_H = max(`Humidity(%)`))
+seoul = inner_join(seoul,hum, by = "Date")
+```
+
 
 
 ### Hourly version
@@ -114,13 +126,20 @@ Keep only the columns that will be used as variables in our model:
 
 ```{r}
 seoul_hourly <- seoul %>% 
-  select(Date, Hour, `Temperature(C)`, `Humidity(%)`, `Wind speed (m/s)`,
+  select(Date, Hour, Min_T, Max_T, Min_H, Max_H, `Wind speed (m/s)`,
          `Rain or snow`, Weekend, Seasons, Holiday)
 ```
 
 
 
 ### Time chunk version
+
+Try Making Time into 8 Hour Chunks
+```{r}
+seoul_hourly$hour_chunks = cut(seoul_hourly$Hour, c(0,8,16,24), right = FALSE)
+```
+
+
 
 # London bike data
 
