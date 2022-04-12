@@ -134,41 +134,120 @@ seoul_hourly <- seoul %>%
 ### Time chunk version
 
 Try Making Time into 8 Hour Chunks
+
+First Chunk [0-8), [8-16), [16 - 24)
+
 ```{r}
-<<<<<<< HEAD
-seoul$hour_chunks = cut(seoul$Hour, c(0,8,16,24), right = FALSE)
-=======
-seoul$Hour_chunks = cut(seoul_hourly$Hour, c(0,8,16,24), right = FALSE)
-```
->>>>>>> 36002795d3bcf8e0d0fd6d8c3781f2f6595aac34
 
-seoul_hourly_chunks <- seoul %>% 
-<<<<<<< HEAD
-  select(`Rented Bike Count`, Date, hour_chunks, Min_T, Max_T, Min_H, Max_H, `Wind speed (m/s)`,
-         `Rain or snow`, Weekend, Seasons, Holiday)
+seoul$Hour_chunks1 = cut(seoul$Hour, c(0,8,16,24), right = FALSE)
 
 
-seoul_hourly_chunks = seoul %>% group_by(Date, hour_chunks, Max_T, Min_T, Min_H, Max_H, Seasons, Holiday, Weekend) %>% summarise(`Rented Bike Count` = sum(`Rented Bike Count`), `Wind speed (m/s)` = mean(`Wind speed (m/s)`),`Rain or snow` = if(sum(`Rain or snow`)>0){1} else {0})
-=======
-  select(Bike_count, Date, Hour_chunks, Min_T, Max_T, Min_H, Max_H, Wind_speed,
-         Rain_or_snow, Is_weekend, Season, Is_holiday)
->>>>>>> 36002795d3bcf8e0d0fd6d8c3781f2f6595aac34
+
+seoul_hourly_chunks_8hr <- seoul %>% 
+  group_by(Date, Hour_chunks1, Min_T, Max_T, Min_H, Max_H,  Is_weekend, Season, Is_holiday) %>% summarise(
+    Bike_count = sum(Bike_count),
+    Wind_speed = mean(Wind_speed),
+    Rain_or_snow = if(sum(Rain_or_snow>0) > 0 ){1} else {0}
+  )
+
 ```
 
 
-#### Compare Models
+
+Try Making Time into 8 Hour Chunks
+
+Chunk [5-13), [13-21), [21 - 5)
+
+So the chunks are:
+
+5 am - 1 pm 
+2 pm - 8 pm
+9 pm - 4 am (of next day)
+
 ```{r}
+seoul$Date2 = seoul$Date
+seoul$Date2[seoul$Hour < 5] = seoul$Date[seoul$Hour < 5] - 1
+
+seoul$Hour_chunks2 = cut(seoul$Hour, c(5,13,21), right = FALSE)
+seoul$Hour_chunks2 = as.character(seoul$Hour_chunks2)
+seoul$Hour_chunks2[seoul$Hour<5 | seoul$Hour >= 21] = "[21-5)" 
+
+seoul_hourly_chunks_8hr_diffday <- seoul %>% 
+  group_by(Date2, Hour_chunks2, Min_T, Max_T, Min_H, Max_H,  Is_weekend, Season, Is_holiday) %>% summarise(
+    Bike_count = sum(Bike_count),
+    Wind_speed = mean(Wind_speed),
+    Rain_or_snow = if(sum(Rain_or_snow>0) > 0 ){1} else {0}
+  )
+
+```
+
+
+Try Making Time into 6 Hour Chunks
+First Chunk [0-6), [6-12), [12 - 18), [18-24)
+```{r}
+
+seoul$Hour_chunks3 =  cut(seoul$Hour, c(0,6,12,18,24), right = FALSE)
+
+seoul_hourly_chunks_6hr <- seoul %>% 
+  group_by(Date, Hour_chunks3, Min_T, Max_T, Min_H, Max_H,  Is_weekend, Season, Is_holiday) %>% summarise(
+    Bike_count = sum(Bike_count),
+    Wind_speed = mean(Wind_speed),
+    Rain_or_snow = if(sum(Rain_or_snow>0) > 0 ){1} else {0}
+  )
+
+```
+
+
+Try Making Time into 4 Hour Chunks
+First Chunk [0-4), [4-8)], [8-12), [12 - 16), [16 - 20), [20-24)
+```{r}
+seoul$Hour_chunks4 =  cut(seoul$Hour, c(0,4,8,12,16,20,24), right = FALSE)
+
+seoul_hourly_chunks_4hr <- seoul %>% 
+  group_by(Date, Hour_chunks4, Min_T, Max_T, Min_H, Max_H,  Is_weekend, Season, Is_holiday) %>% summarise(
+    Bike_count = sum(Bike_count),
+    Wind_speed = mean(Wind_speed),
+    Rain_or_snow = if(sum(Rain_or_snow>0) > 0 ){1} else {0}
+  )
+
+```
+
+### Compare Models
+
+Fitting all different breaks with a random intercept and compare their R^2
+
+```{r}
+## Fit the data with random intercept model
 hourly = lmer(Bike_count ~ factor(Hour) + Min_T + Max_T + Min_H + Max_H + Wind_speed +
          Rain_or_snow + Is_weekend + Season + Is_holiday + (1|Date), data = seoul_hourly, REML = T)
 
+
+chunk_8hr = lmer(Bike_count ~ Hour_chunks1 + Min_T + Max_T + Min_H + Max_H + Wind_speed +
+         Rain_or_snow + Is_weekend + Season + Is_holiday + (1|Date), data = seoul_hourly_chunks_8hr, REML = T)
+
+
+chunk_8hr_diffday = lmer(Bike_count ~ Hour_chunks2 + Min_T + Max_T + Min_H + Max_H + Wind_speed +
+         Rain_or_snow + Is_weekend + Season + Is_holiday + (1|Date2), data = seoul_hourly_chunks_8hr_diffday, REML = T)
+
+
+chunk_6hr = lmer(Bike_count ~ Hour_chunks3 + Min_T + Max_T + Min_H + Max_H + Wind_speed +
+         Rain_or_snow + Is_weekend + Season + Is_holiday + (1|Date), data = seoul_hourly_chunks_6hr, REML = T)
+
+
+chunk_4hr = lmer(Bike_count ~ Hour_chunks4 + Min_T + Max_T + Min_H + Max_H + Wind_speed +
+         Rain_or_snow + Is_weekend + Season + Is_holiday + (1|Date), data = seoul_hourly_chunks_4hr, REML = T)
+
+
+## Compare the R^2
 r.squaredGLMM(hourly)
+r.squaredGLMM(chunk_8hr)
+r.squaredGLMM(chunk_8hr_diffday)
+r.squaredGLMM(chunk_6hr)
+r.squaredGLMM(chunk_4hr)
 
-chunk = lmer(Bike_count ~ Hour_chunks + Min_T + Max_T + Min_H + Max_H + Wind_speed +
-         Rain_or_snow + Is_weekend + Season + Is_holiday + (1|Date), data = seoul_hourly_chunks, REML = T)
-
-r.squaredGLMM(chunk)
 ```
 
+As we can see, the 8 hour chunks broken up starting at 5 am perform the best. However, the difference between that fit and the mdoel with 8 hour chunks starting at midnight is very small (only 0.01) for R^2, so for simplicity, we will work with the model with the following 8 hour chunks: [0-8), [8-16), [16 - 24)
 
 # London bike data
 
@@ -178,9 +257,7 @@ london <- read_csv("LondonBikeData.csv")
 dim(london)
 spec(london)
 ```
-<<<<<<< HEAD
-So chunks seem to perform better bc larger R^2
-=======
+
 
 Convert season to character to match across datasets:
 ```{r}
@@ -189,7 +266,6 @@ london <- london %>%
                          ifelse(season == 1, "Summer",
                                 ifelse(season == 2, "Autumn", "Winter"))))
 ```
->>>>>>> 36002795d3bcf8e0d0fd6d8c3781f2f6595aac34
 
 Format timestamp as a Date object:
 ```{r}
