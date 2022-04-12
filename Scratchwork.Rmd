@@ -139,12 +139,12 @@ First Chunk [0-8), [8-16), [16 - 24)
 
 ```{r}
 
-seoul$Hour_chunks1 = cut(seoul$Hour, c(0,8,16,24), right = FALSE)
+seoul$Hour_chunks = cut(seoul$Hour, c(0,8,16,24), right = FALSE)
 
 
 
 seoul_hourly_chunks_8hr <- seoul %>% 
-  group_by(Date, Hour_chunks1, Min_T, Max_T, Min_H, Max_H,  Is_weekend, Season, Is_holiday) %>% summarise(
+  group_by(Date, Hour_chunks, Min_T, Max_T, Min_H, Max_H,  Is_weekend, Season, Is_holiday) %>% summarise(
     Bike_count = sum(Bike_count),
     Wind_speed = mean(Wind_speed),
     Rain_or_snow = if(sum(Rain_or_snow>0) > 0 ){1} else {0}
@@ -222,7 +222,7 @@ hourly = lmer(Bike_count ~ factor(Hour) + Min_T + Max_T + Min_H + Max_H + Wind_s
          Rain_or_snow + Is_weekend + Season + Is_holiday + (1|Date), data = seoul_hourly, REML = T)
 
 
-chunk_8hr = lmer(Bike_count ~ Hour_chunks1 + Min_T + Max_T + Min_H + Max_H + Wind_speed +
+chunk_8hr = lmer(Bike_count ~ Hour_chunks + Min_T + Max_T + Min_H + Max_H + Wind_speed +
          Rain_or_snow + Is_weekend + Season + Is_holiday + (1|Date), data = seoul_hourly_chunks_8hr, REML = T)
 
 
@@ -248,6 +248,15 @@ r.squaredGLMM(chunk_4hr)
 ```
 
 As we can see, the 8 hour chunks broken up starting at 5 am perform the best. However, the difference between that fit and the mdoel with 8 hour chunks starting at midnight is very small (only 0.01) for R^2, so for simplicity, we will work with the model with the following 8 hour chunks: [0-8), [8-16), [16 - 24)
+
+
+## Final Seoul Data Set
+Based on this, the data set we will use to fit the model will be  "seoul_data":
+
+```{r}
+seoul_data <- seoul_hourly_chunks_8hr
+```
+
 
 # London bike data
 
@@ -314,6 +323,18 @@ Keep only the columns that will be used as variables in our model:
 london <- london %>% 
   select(Bike_count, Date, Hour, Min_T, Max_T, Min_H, Max_H, Wind_speed,
          Rain_or_snow, Is_weekend, Season, Is_holiday)
+
+
+london$Hour_chunks = cut(london$Hour, c(0,8,16,24), right = FALSE)
+
+
+
+london_data <- london %>% 
+  group_by(Date, Hour_chunks, Min_T, Max_T, Min_H, Max_H,  Is_weekend, Season, Is_holiday) %>% summarise(
+    Bike_count = sum(Bike_count),
+    Wind_speed = mean(Wind_speed),
+    Rain_or_snow = if(sum(Rain_or_snow>0) > 0 ){1} else {0}
+  )
 ```
 
 ```{r}
@@ -383,6 +404,21 @@ dc <- dc %>%
   select(Bike_count, Date, Hour, Min_T, Max_T, Min_H, Max_H, Wind_speed,
          Rain_or_snow, Is_weekend, Season, Is_holiday)
 ```
+
+Make the dc data into time chunk verson:
+```{r}
+dc$Hour_chunks = cut(dc$Hour, c(0,8,16,24), right = FALSE)
+
+
+
+dc_data <- dc %>% 
+  group_by(Date, Hour_chunks, Min_T, Max_T, Min_H, Max_H,  Is_weekend, Season, Is_holiday) %>% summarise(
+    Bike_count = sum(Bike_count),
+    Wind_speed = mean(Wind_speed),
+    Rain_or_snow = if(sum(Rain_or_snow>0) > 0 ){1} else {0}
+  )
+```
+
 
 ```{r}
 ggplot(dc, aes(x = Hour, y = Bike_count)) + geom_point(shape = 21)
