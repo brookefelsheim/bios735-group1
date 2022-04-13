@@ -1,0 +1,425 @@
+---
+title: "Notes"
+author: "Elena Kharitonova"
+date: "4/4/2022"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE}
+library(tidyverse)
+library(lme4)
+library(lmerTest)
+library(MuMIn)
+```
+
+
+What we want to do:
+- Remove Solar Radiation 
+- Dew Point Temperature
+- Visibility 10 m
+- Visibility 10 m
+
+
+- REMOVE ALL DATA POINTS WHERE FUNCTION DAY = NO
+
+
+Want to add:
+- Weekend variable
+- Try changing hours to 6 hour blocks and sum bike counts and seeing if that improves (compare using BIC value)
+- Try splines
+- Temperature change to Max and Min for day
+- Humidity change to be consistent with temperature
+
+
+** Idea make time that is before 4 am be that of last day
+
+Variables in Model:     
+
+* Date (Random Effect)     
+* Hour/Time Chunk     
+* Max/Min Temp     
+* Max/Min Humidity     
+* Windspeed     
+* Make Rain binary and Snow binary and combine     
+* Weekend     
+* Seasons      
+* Holiday     
+
+# Seoul bike data 
+
+## Data processing 
+
+Load in Seoul bike data
+```{r message=FALSE}
+seoul <- read_csv("SeoulBikeData.csv")
+dim(seoul)
+spec(seoul)
+```
+
+Non-functioning days have zero bike counts:
+```{r}
+table(seoul$`Functioning Day`)
+any(seoul$`Rented Bike Count`[seoul$`Functioning Day` == "No"] != 0)
+```
+
+We assume that this is when the bike system was not operating, so we will remove this from our data.
+```{r}
+seoul <- seoul %>% 
+  filter(`Functioning Day` == "Yes")
+```
+
+We want to combine rain and snow into a single binary variable:     
+```{r}
+seoul <- seoul %>% 
+  mutate(Rain_or_snow = ifelse(`Rainfall(mm)` > 0 | `Snowfall (cm)` > 0, 1, 0))
+table(seoul$Rain_or_snow)
+```
+
+We next want to add a "weekend" variable. We can convert the `Date` column into an R Date object and use the `weekdays()` function to help us do this.     
+```{r}
+seoul <- seoul %>% 
+  mutate(Date = as.Date(Date, format = "%d/%m/%Y")) %>% 
+  mutate(Weekend = ifelse(weekdays(Date) == "Saturday" | weekdays(Date) == "Sunday", 1, 0))
+table(seoul$Weekend)
+```
+
+Format `Holiday` column as 0 and 1 to match other binary variables     
+```{r}
+seoul <- seoul %>% 
+  mutate(Holiday = ifelse(Holiday == "Holiday", 1, 0))
+```
+
+Make max or min of temperature for each day
+```{r}
+temp = seoul %>% group_by(Date) %>% summarise(Min_T = min(`Temperature(C)`), Max_T = max(`Temperature(C)`))
+seoul = inner_join(seoul,temp, by = "Date")
+```
+
+Make max or min of Humidity for each day
+```{r}
+hum = seoul %>% group_by(Date) %>% summarise(Min_H = min(`Humidity(%)`), Max_H = max(`Humidity(%)`))
+seoul = inner_join(seoul,hum, by = "Date")
+```
+
+Standardize variable names to match across datasets
+```{r}
+seoul <- seoul %>% 
+  rename(Bike_count = `Rented Bike Count`,
+         Wind_speed = `Wind speed (m/s)`,
+         Is_weekend = Weekend,
+         Season = Seasons,
+         Is_holiday = Holiday)
+```
+
+### Hourly version
+
+```{r}
+ggplot(seoul, aes(x = Hour, y = Bike_count)) + geom_point(shape = 21)
+```
+
+Keep only the columns that will be used as variables in our model:     
+
+```{r}
+seoul_hourly <- seoul %>% 
+  select(Bike_count, Date, Hour, Min_T, Max_T, Min_H, Max_H, Wind_speed,
+         Rain_or_snow, Is_weekend, Season, Is_holiday)
+```
+
+### Time chunk version
+
+Try Making Time into 8 Hour Chunks
+
+First Chunk [0-8), [8-16), [16 - 24)
+
+```{r}
+
+seoul$Hour_chunks = cut(seoul$Hour, c(0,8,16,24), right = FALSE)
+
+
+
+seoul_hourly_chunks_8hr <- seoul %>% 
+  group_by(Date, Hour_chunks, Min_T, Max_T, Min_H, Max_H,  Is_weekend, Season, Is_holiday) %>% summarise(
+    Bike_count = sum(Bike_count),
+    Wind_speed = mean(Wind_speed),
+    Rain_or_snow = if(sum(Rain_or_snow>0) > 0 ){1} else {0}
+  )
+
+```
+
+
+
+Try Making Time into 8 Hour Chunks
+
+Chunk [5-13), [13-21), [21 - 5)
+
+So the chunks are:
+
+5 am - 1 pm 
+2 pm - 8 pm
+9 pm - 4 am (of next day)
+
+```{r}
+seoul$Date2 = seoul$Date
+seoul$Date2[seoul$Hour < 5] = seoul$Date[seoul$Hour < 5] - 1
+
+seoul$Hour_chunks2 = cut(seoul$Hour, c(5,13,21), right = FALSE)
+seoul$Hour_chunks2 = as.character(seoul$Hour_chunks2)
+seoul$Hour_chunks2[seoul$Hour<5 | seoul$Hour >= 21] = "[21-5)" 
+
+seoul_hourly_chunks_8hr_diffday <- seoul %>% 
+  group_by(Date2, Hour_chunks2, Min_T, Max_T, Min_H, Max_H,  Is_weekend, Season, Is_holiday) %>% summarise(
+    Bike_count = sum(Bike_count),
+    Wind_speed = mean(Wind_speed),
+    Rain_or_snow = if(sum(Rain_or_snow>0) > 0 ){1} else {0}
+  )
+
+```
+
+
+Try Making Time into 6 Hour Chunks
+First Chunk [0-6), [6-12), [12 - 18), [18-24)
+```{r}
+
+seoul$Hour_chunks3 =  cut(seoul$Hour, c(0,6,12,18,24), right = FALSE)
+
+seoul_hourly_chunks_6hr <- seoul %>% 
+  group_by(Date, Hour_chunks3, Min_T, Max_T, Min_H, Max_H,  Is_weekend, Season, Is_holiday) %>% summarise(
+    Bike_count = sum(Bike_count),
+    Wind_speed = mean(Wind_speed),
+    Rain_or_snow = if(sum(Rain_or_snow>0) > 0 ){1} else {0}
+  )
+
+```
+
+
+Try Making Time into 4 Hour Chunks
+First Chunk [0-4), [4-8)], [8-12), [12 - 16), [16 - 20), [20-24)
+```{r}
+seoul$Hour_chunks4 =  cut(seoul$Hour, c(0,4,8,12,16,20,24), right = FALSE)
+
+seoul_hourly_chunks_4hr <- seoul %>% 
+  group_by(Date, Hour_chunks4, Min_T, Max_T, Min_H, Max_H,  Is_weekend, Season, Is_holiday) %>% summarise(
+    Bike_count = sum(Bike_count),
+    Wind_speed = mean(Wind_speed),
+    Rain_or_snow = if(sum(Rain_or_snow>0) > 0 ){1} else {0}
+  )
+
+```
+
+### Compare Models
+
+Fitting all different breaks with a random intercept and compare their R^2
+
+```{r}
+## Fit the data with random intercept model
+hourly = lmer(Bike_count ~ factor(Hour) + Min_T + Max_T + Min_H + Max_H + Wind_speed +
+         Rain_or_snow + Is_weekend + Season + Is_holiday + (1|Date), data = seoul_hourly, REML = T)
+
+
+chunk_8hr = lmer(Bike_count ~ Hour_chunks + Min_T + Max_T + Min_H + Max_H + Wind_speed +
+         Rain_or_snow + Is_weekend + Season + Is_holiday + (1|Date), data = seoul_hourly_chunks_8hr, REML = T)
+
+
+chunk_8hr_diffday = lmer(Bike_count ~ Hour_chunks2 + Min_T + Max_T + Min_H + Max_H + Wind_speed +
+         Rain_or_snow + Is_weekend + Season + Is_holiday + (1|Date2), data = seoul_hourly_chunks_8hr_diffday, REML = T)
+
+
+chunk_6hr = lmer(Bike_count ~ Hour_chunks3 + Min_T + Max_T + Min_H + Max_H + Wind_speed +
+         Rain_or_snow + Is_weekend + Season + Is_holiday + (1|Date), data = seoul_hourly_chunks_6hr, REML = T)
+
+
+chunk_4hr = lmer(Bike_count ~ Hour_chunks4 + Min_T + Max_T + Min_H + Max_H + Wind_speed +
+         Rain_or_snow + Is_weekend + Season + Is_holiday + (1|Date), data = seoul_hourly_chunks_4hr, REML = T)
+
+
+## Compare the R^2
+r.squaredGLMM(hourly)
+r.squaredGLMM(chunk_8hr)
+r.squaredGLMM(chunk_8hr_diffday)
+r.squaredGLMM(chunk_6hr)
+r.squaredGLMM(chunk_4hr)
+
+```
+
+As we can see, the 8 hour chunks broken up starting at 5 am perform the best. However, the difference between that fit and the mdoel with 8 hour chunks starting at midnight is very small (only 0.01) for R^2, so for simplicity, we will work with the model with the following 8 hour chunks: [0-8), [8-16), [16 - 24)
+
+
+## Final Seoul Data Set
+Based on this, the data set we will use to fit the model will be  "seoul_data":
+
+```{r}
+seoul_data <- seoul_hourly_chunks_8hr
+```
+
+
+# London bike data
+
+Load in London bike data:
+```{r}
+london <- read_csv("LondonBikeData.csv")
+dim(london)
+spec(london)
+```
+
+
+Convert season to character to match across datasets:
+```{r}
+london <- london %>% 
+  mutate(Season = ifelse(season == 0, "Spring",
+                         ifelse(season == 1, "Summer",
+                                ifelse(season == 2, "Autumn", "Winter"))))
+```
+
+Format timestamp as a Date object:
+```{r}
+london <- london %>% 
+  mutate(Date = as.Date(timestamp))
+```
+
+Extract hour from timestamp:
+```{r}
+london <- london %>% 
+  mutate(Hour = as.numeric(format(as.POSIXct(london$timestamp), format = "%H")))
+```
+
+Create rain or snow column:
+```{r}
+london <- london %>% 
+  mutate(Rain_or_snow = ifelse(weather_code %in% c(7, 10, 26), 1, 0))
+table(london$Rain_or_snow)
+```
+
+Make max or min of temperature for each day
+```{r}
+temp = london %>% group_by(Date) %>% summarise(Min_T = min(t1), Max_T = max(t1))
+london = inner_join(london, temp, by = "Date")
+```
+
+Make max or min of humidity for each day
+```{r}
+hum = london %>% group_by(Date) %>% summarise(Min_H = min(hum), Max_H = max(hum))
+london= inner_join(london, hum, by = "Date")
+```
+
+Standardize variable names to match across datasets:
+```{r}
+london <- london %>% 
+  rename(Bike_count = cnt,
+         Wind_speed = wind_speed,
+         Is_weekend = is_weekend,
+         Is_holiday = is_holiday,
+         )
+```
+
+Keep only the columns that will be used as variables in our model:     
+
+```{r}
+london <- london %>% 
+  select(Bike_count, Date, Hour, Min_T, Max_T, Min_H, Max_H, Wind_speed,
+         Rain_or_snow, Is_weekend, Season, Is_holiday)
+
+
+london$Hour_chunks = cut(london$Hour, c(0,8,16,24), right = FALSE)
+
+
+
+london_data <- london %>% 
+  group_by(Date, Hour_chunks, Min_T, Max_T, Min_H, Max_H,  Is_weekend, Season, Is_holiday) %>% summarise(
+    Bike_count = sum(Bike_count),
+    Wind_speed = mean(Wind_speed),
+    Rain_or_snow = if(sum(Rain_or_snow>0) > 0 ){1} else {0}
+  )
+```
+
+```{r}
+ggplot(london, aes(x = Hour, y = Bike_count)) + geom_point(shape = 21)
+```
+
+# DC bike data
+
+```{r}
+dc <- read_csv("DCBikeData.csv")
+dim(dc)
+spec(dc)
+```
+
+Convert season to character to match across datasets:
+```{r}
+dc <- dc %>% 
+  mutate(Season = ifelse(season == 1, "Spring",
+                         ifelse(season == 2, "Summer",
+                                ifelse(season == 3, "Autumn", "Winter"))))
+```
+
+Format date as a Date object:
+```{r}
+dc <- dc %>% 
+  mutate(Date = as.Date(dteday, format = "%Y-%m-%d"))
+```
+
+Create rain or snow column:
+```{r}
+dc <- dc %>% 
+  mutate(Rain_or_snow = ifelse(weathersit %in% c(3, 4), 1, 0))
+table(dc$Rain_or_snow)
+```
+
+Create weekend column:
+```{r}
+dc <- dc %>% 
+  mutate(Is_weekend = ifelse(weekday %in% c(0,6), 1, 0))
+```
+
+Make max or min of temperature for each day
+```{r}
+temp = dc %>% group_by(Date) %>% summarise(Min_T = min(temp), Max_T = max(temp))
+dc = inner_join(dc, temp, by = "Date")
+```
+
+Make max or min of humidity for each day
+```{r}
+hum = dc %>% group_by(Date) %>% summarise(Min_H = min(hum), Max_H = max(hum))
+dc = inner_join(dc, hum, by = "Date")
+```
+
+Standardize variable names to match across datasets:
+```{r}
+dc <- dc %>% 
+  rename(Bike_count = cnt,
+         Wind_speed = windspeed,
+         Is_holiday = holiday,
+         Hour = hr)
+```
+
+Keep only the columns that will be used as variables in our model:     
+
+```{r}
+dc <- dc %>% 
+  select(Bike_count, Date, Hour, Min_T, Max_T, Min_H, Max_H, Wind_speed,
+         Rain_or_snow, Is_weekend, Season, Is_holiday)
+```
+
+Make the dc data into time chunk verson:
+```{r}
+dc$Hour_chunks = cut(dc$Hour, c(0,8,16,24), right = FALSE)
+
+
+
+dc_data <- dc %>% 
+  group_by(Date, Hour_chunks, Min_T, Max_T, Min_H, Max_H,  Is_weekend, Season, Is_holiday) %>% summarise(
+    Bike_count = sum(Bike_count),
+    Wind_speed = mean(Wind_speed),
+    Rain_or_snow = if(sum(Rain_or_snow>0) > 0 ){1} else {0}
+  )
+```
+
+
+```{r}
+ggplot(dc, aes(x = Hour, y = Bike_count)) + geom_point(shape = 21)
+```
