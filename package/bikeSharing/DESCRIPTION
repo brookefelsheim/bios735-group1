@@ -2,25 +2,25 @@ Package: bikeSharing
 Title: Bike Sharing Demand Prediction
 Version: 1.0.0
 Authors@R: 
-    c(person(given = "Jiawen",
-           family = "Chen",
-           role = c("aut", "cre"),
-           email = "jiawenn@email.unc.edu"),
-               person(given = "Brooke",
+    c(person(given = "Brooke",
            family = "Felsheim",
            role = c("aut", "cre"),
            email = "felsheim@email.unc.edu"),
+               person(given = "Jiawen",
+           family = "Chen",
+           role = c("aut"),
+           email = "jiawenn@email.unc.edu"),
                person(given = "Elena",
            family = "Kharitonova",
-           role = c("aut", "cre"),
+           role = c("aut"),
            email = "ekhar@email.unc.edu"),
                person(given = "Jairui",
            family = "Tang",
-           role = c("aut", "cre"),
+           role = c("aut"),
            email = "jiarui1@email.unc.edu"),
                person(given = "Xinjie",
            family = "Qian",
-           role = c("aut", "cre"),
+           role = c("aut"),
            email = "qianqxj@live.unc.edu"))
 Description: What the package does (one paragraph).
 License: GPL (>= 3)
