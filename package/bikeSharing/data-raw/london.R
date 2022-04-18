@@ -21,8 +21,7 @@ london <- london %>%
 
 # Extract hour from timestamp
 london <- london %>%
-  mutate(Hour = as.numeric(format(as.POSIXct(london$timestamp),
-                                  format = "%H")))
+  mutate(Hour = as.numeric(sub(":.*", "", sub(".* ", "", london$timestamp))))
 
 # Create rain or snow column
 london <- london %>%
