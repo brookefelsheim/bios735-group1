@@ -258,6 +258,53 @@ seoul_data <- seoul_hourly_chunks_8hr
 ```
 
 
+## Random Forest
+```{r}
+x=seoul_data%>%select(Hour_chunks,Min_T,Max_T,Min_H,Max_H,Wind_speed,
+              Rain_or_snow,Is_weekend,Season,Is_holiday,Date)%>%
+  mutate(Hour_chunks=as.character(Hour_chunks),
+         Rain_or_snow=as.character(Rain_or_snow),
+         Is_weekend=as.character(Is_weekend),
+         Season=as.character(Season),
+         Is_holiday=as.character(Is_holiday),
+         Date=as.character(Date)
+         )
+y=unlist(seoul_data%>%select(Bike_count))
+library(caret)
+library(ggplot2)
+library(tidyverse)
+library(egg)
+library(data.table)
+trCtl <- trainControl(method="cv", number=5, savePredictions=TRUE)
+rf.fit <- train(x, y, method="rf", trControl=trCtl)
+rf.fit$bestTune
+rf.fit$results[rownames(rf.fit$bestTune),]$Rsquared
+model1 <- randomForest(Bike_count ~ Hour_chunks + Min_T + Max_T + Min_H + Max_H + Wind_speed +
+                         Rain_or_snow + Is_weekend + Season + Is_holiday + Date, 
+                       data = data_all, importance=TRUE, ntree=500, mtry = 11, do.trace=100)
+
+reprtree:::plot.getTree(model1,k=1,depth=4)
+importance_matrix=model1$importance %>% as.data.frame(check.names=F)
+setorder(importance_matrix,-`%IncMSE`)
+ggplot(importance_matrix,aes(x=`%IncMSE`,y=IncNodePurity))+geom_point(color="grey30",alpha=0.7)+
+  theme_article()+
+  ggrepel::geom_label_repel(label=c(rownames(importance_matrix)[1:5],
+                                    rep("",nrow(importance_matrix)-5)),nudge_x=0.5,min.segment.length=0)+
+  xlab("Increase in MSE")+
+  ylab("Increase in node purity")
+```
+
+
+
+
+
+
+
+
+
+
+
+
 # London bike data
 
 Load in London bike data:
