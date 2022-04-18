@@ -262,7 +262,7 @@ seoul_data <- seoul_hourly_chunks_8hr
 ```{r}
 x=seoul_data%>%select(Hour_chunks,Min_T,Max_T,Min_H,Max_H,Wind_speed,
               Rain_or_snow,Is_weekend,Season,Is_holiday,Date)%>%
-  mutate(Hour_chunks=as.character(Hour_chunks),
+  mutate(Hour_chunks=as.character(Hour_chunks,levels = c("[0,8)","[8,16)" ,"[16,24)")),
          Rain_or_snow=as.character(Rain_or_snow),
          Is_weekend=as.character(Is_weekend),
          Season=as.character(Season),
@@ -270,6 +270,7 @@ x=seoul_data%>%select(Hour_chunks,Min_T,Max_T,Min_H,Max_H,Wind_speed,
          Date=as.character(Date)
          )
 y=unlist(seoul_data%>%select(Bike_count))
+
 library(caret)
 library(ggplot2)
 library(tidyverse)
@@ -293,16 +294,6 @@ ggplot(importance_matrix,aes(x=`%IncMSE`,y=IncNodePurity))+geom_point(color="gre
   xlab("Increase in MSE")+
   ylab("Increase in node purity")
 ```
-
-
-
-
-
-
-
-
-
-
 
 
 # London bike data
