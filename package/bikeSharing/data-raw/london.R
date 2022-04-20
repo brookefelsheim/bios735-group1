@@ -74,11 +74,6 @@ london <- london %>%
     Bike_count = sum(Bike_count)
   )
 
-# Add column that gives chronological order of observations
-london <- london %>%
-  arrange(Date, Hour_chunks)
-london$Order <- 1:nrow(london)
-
 london <- data.frame(london)
 
 usethis::use_data(london, overwrite = TRUE)
