@@ -1,0 +1,294 @@
+---
+title: "model"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE}
+library(tidyverse)
+library(lme4)
+library(lmerTest)
+library(MuMIn)
+```
+
+
+```{r message=FALSE}
+seoul <- read_csv("SeoulBikeData.csv")
+dim(seoul)
+spec(seoul)
+seoul <- seoul %>% 
+  filter(`Functioning Day` == "Yes")
+seoul <- seoul %>% 
+  mutate(Rain_or_snow = ifelse(`Rainfall(mm)` > 0 | `Snowfall (cm)` > 0, 1, 0))
+table(seoul$Rain_or_snow)
+seoul <- seoul %>% 
+  mutate(Date = as.Date(Date, format = "%d/%m/%Y")) %>% 
+  mutate(Weekend = ifelse(weekdays(Date) == "Saturday" | weekdays(Date) == "Sunday", 1, 0))
+seoul <- seoul %>% 
+  mutate(Holiday = ifelse(Holiday == "Holiday", 1, 0))
+temp = seoul %>% group_by(Date) %>% summarise(Min_T = min(`Temperature(C)`), Max_T = max(`Temperature(C)`))
+seoul = inner_join(seoul,temp, by = "Date")
+hum = seoul %>% group_by(Date) %>% summarise(Min_H = min(`Humidity(%)`), Max_H = max(`Humidity(%)`))
+seoul = inner_join(seoul,hum, by = "Date")
+seoul <- seoul %>% 
+  rename(Bike_count = `Rented Bike Count`,
+         Wind_speed = `Wind speed (m/s)`,
+         Is_weekend = Weekend,
+         Season = Seasons,
+         Is_holiday = Holiday)
+seoul <- seoul %>% mutate(Date = format(Date, format="%m-%d"))
+seoul_hourly <- seoul %>% 
+  select(Bike_count, Date, Hour, Min_T, Max_T, Min_H, Max_H, Wind_speed,
+         Rain_or_snow, Is_weekend, Season, Is_holiday)
+```
+
+```{r}
+load("seoul.rda")
+```
+
+```{r}
+require(foreign)
+require(MASS)
+fit_model = glm.nb(Bike_count ~ Min_temp + Max_temp, data = seoul)
+summary(fit_model)
+```
+
+```{r cars}
+r.walk = function(s2){
+  rnorm(1,0,sqrt(s2))
+}
+
+g.sim = function(u,s2){
+  u + r.walk(s2)
+}
+
+rejection.sample.gamma.posterior.i = function(yi, xi = cbind(rep(1,3), 1:3), M, maxit, betat, s2gammat, trace = 0) {
+  
+  gammai = rep(0,M)
+  
+  gammai[1] = rnorm(1, 0, sqrt(s2gammat))
+  lambdai = exp(xi %*% betat + gammai[1])
+  
+  # Random Walk Sampler
+  for (i in 1:(M-1)) {
+    lambdai0 = lambdai
+    gammai[i+1] = g.sim(gammai[i],s2gammat)
+    lambdai = exp(xi %*% betat + gammai[i+1])
+    L1 = prod(dnbinom(yi,n=10000, lambda = lambdai))*dnorm(gammai[i]-gammai[i+1],
+                                                 mean = 0,sd=sqrt(s2gammat))
+    L2= prod(dnbinom(yi,n=10000, lambda = lambdai0))*dnorm(gammai[i+1]-gammai[i],
+                                                 mean = 0,sd=sqrt(s2gammat))
+    if (L1>0) {
+      r = L1 / L2
+      if (r<1) {
+      randnum = rbinom(1,1,r)
+      if (randnum==0){
+        gammai[i+1]=gammai[i]
+      }
+    }
+    } else{
+      gammai[i+1]=gammai[i]
+    }
+    
+    
+    
+    if (trace > 0)
+    print(gammai[i+1])
+    
+  }
+  return(list(gammai = gammai))
+  
+}
+rejection.sample.gamma.posterior.all = function(data,
+                                                M,
+                                                maxit,
+                                                betat,
+                                                s2gammat,
+                                                trace = 0) {
+  
+  unique_date = unique(data$Date)
+  n=353
+  rejection.samples = matrix(NA,nrow = n, ncol = M)
+  
+  ## looping over n subjects
+  for (i in 1:n) {
+    
+    if(trace > 0) print(i) 
+    
+    # draw M samples from the posterior for gamma_i
+    rejection.samples.i =
+      rejection.sample.gamma.posterior.i(
+        yi = data[data$Date == unqiue_date[i], 12],
+        M = M,
+        maxit = maxit,
+        betat = betat,
+        s2gammat = s2gammat,
+        trace = trace
+      )$gammai
+    
+    # save to matrix
+    rejection.samples[i,] = rejection.samples.i
+
+  }
+  
+  if(trace > 0) print("completed sampling") 
+  
+  ## return matrix
+  return(rejection.samples)
+  
+}
+Qi = function(datai,
+              xi = cbind(rep(1, 3), 1:3),
+              betat,
+              s2gammat,
+              gammai,
+              burn_in) {
+  # 5 x 1 vector
+  yi = datai$words
+  
+  # get M
+  M = length(gammai)
+
+    x_beta_mat = xi %*% matrix(betat, nrow = length(betat), ncol = M)
+    
+    # create 5 x M matrix, x_beta_plus_gamma_mat
+    # m'th column is xi %*% betat + gammai[m]
+    x_beta_plus_gamma_mat = sweep(x_beta_mat, 2 , gammai, "+")
+  
+    # calculate lambda (5 x M matrix)
+    lambdai = exp(x_beta_plus_gamma_mat)  
+  
+    # calculate Q
+    ymat = matrix(yi, nrow = length(yi), ncol = M)
+    qi = sum(dpois(ymat, lambda = lambdai, log = T)[,-c(1:burn_in)]) + 
+         sum(dnorm(gammai, mean = 0,sd = sqrt(s2gammat),log = T)[-c(1:burn_in)])
+    
+    # divide sum by M
+    qi = qi / (M-burn_in)
+  
+  ## return values
+  return(qi)
+}
+Q = function(data,
+             betat,
+             s2gammat,
+             rejection.samples,
+             burn_in,
+             logs2gammat = F) {
+  # backtranform if maximizing s2gammat on log scale
+  if (logs2gammat == T) {
+    s2gammat = exp(s2gammat)
+  }
+  
+  # initialize sum
+  Q = 0
+  
+  # loop over subjects
+  for (i in 1:353) {
+    Q = Q + Qi(data[data$subject == i, ],
+               betat = betat,
+               s2gammat = s2gammat,
+               gammai = rejection.samples[i, ],burn_in = burn_in)
+  }
+  
+  # return
+  return(Q)
+}
+
+  tol = 10^-5
+  maxit = 100
+  iter = 0
+  eps = 10000
+  qfunction = rep(-10000,maxit) # using Qfunction for convergence
+  
+# starting values, taken from rejection sampling example
+  beta = c(1, 1) 
+  s2gamma =  0.000225 + .01 
+
+# Length of chain
+  M = 10000
+
+# burn in
+  burn.in = 2000
+
+  library(data.table)
+  seoul = data.table(seoul)
+  
+  n = length(unique(seoul$Date))
+  
+  library(optimx)
+  
+  while(eps > tol & iter < maxit){
+  
+  ## save old qfunction
+    if (iter==0) {
+      qfunction0 = -1000
+    } else {
+      qfunction0 = qfunction[iter]
+    }
+  
+  ## Begin E-step
+  
+    # update rejection.samples column with the new draws
+    rejection.samples = rejection.sample.gamma.posterior.all(
+      data = seoul,
+      M = M,
+      maxit = maxit * M,
+      betat = beta,
+      s2gammat = s2gamma
+    )
+ 
+    qfunction[iter+1] = Q(data = seoul, 
+                  betat = beta, 
+                  s2gammat = s2gamma, 
+                  rejection.samples = rejection.samples,
+                  burn_in = burn.in)
+    print(qfunction[iter+1])
+      
+
+    eps  = abs(qfunction[iter+1] - qfunction0) / abs(qfunction0)
+  
+    
+  ## Start M-step : nelder mead
+    fit = optimx(
+      # initial values for the parameters
+      par = c(beta, log(s2gamma)),
+      # Q function wrapper
+      fn = function(x, data, rejection.samples){
+            Q(data = seoul, 
+              betat = x[1:length(beta)], 
+              s2gammat = x[length(beta)+1], 
+              rejection.samples = rejection.samples,
+              logs2gammat = T,
+              burn_in = burn.in# indicating s2gamma on log scale! 
+            )   
+        }, 
+      method = "Nelder-Mead",
+      data = data,
+      rejection.samples = rejection.samples,
+      control = list(
+        trace = 0, 
+        maximize = T, 
+        abstol= tol
+      )
+    )
+    
+
+    beta = as.numeric(fit[1:length(beta)])
+    s2gamma = as.numeric(fit[length(beta)+1])
+
+    s2gamma = exp(s2gamma)
+    
+
+    iter = iter + 1
+    if(iter == maxit) warning("Iteration limit reached without convergence")
+  
+    
+
+    cat(sprintf("Iter: %d Qf: %.3f s2gamma: %f beta0: %.3f beta0:%.3f eps:%f\n",iter, qfunction[iter],s2gamma, beta[1],beta[2], eps))
+}
+```
+
