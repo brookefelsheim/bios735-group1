@@ -122,7 +122,7 @@ rejection.sample.gamma.posterior.all = function(data,
     # draw M samples from the posterior for gamma_i
     rejection.samples.i =
       rejection.sample.gamma.posterior.i(
-        yi = data[data$Date == unqiue_date[i], 12],
+        yi = data[data$Date == unique_date[i], Bike_count],
         M = M,
         maxit = maxit,
         betat = betat,
