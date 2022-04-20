@@ -52,7 +52,7 @@ load("seoul.rda")
 ```{r}
 require(foreign)
 require(MASS)
-fit_model = glm.nb(Bike_count ~ Min_temp + Max_temp, data = seoul)
+fit_model = glm.nb(Bike_count ~ Min_temp + Max_temp + , data = seoul)
 summary(fit_model)
 ```
 
@@ -164,7 +164,7 @@ Qi = function(datai,
   
     # calculate Q
     ymat = matrix(yi, nrow = length(yi), ncol = M)
-    qi = sum(dnbinom(yi,size = lambdai,prob = 1/2,mu=4,log = T)[,-c(1:burn_in)]) + 
+    qi = sum(dnbinom(yi,size=10000,mu=lambdai,log = T)[,-c(1:burn_in)]) + 
          sum(dnorm(gammai, mean = 0,sd = sqrt(s2gammat),log = T)[-c(1:burn_in)])
     
     # divide sum by M
@@ -233,7 +233,6 @@ Q = function(data,
   
   ## Begin E-step
   
-    # update rejection.samples column with the new draws
     rejection.samples = rejection.sample.gamma.posterior.all(
       data = seoul,
       M = M,
