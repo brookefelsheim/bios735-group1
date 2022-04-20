@@ -54,6 +54,10 @@ london <- london %>%
          Is_holiday = is_holiday,
   )
 
+# Make the Date Only Include Month and Day, not Year
+london <- london %>% mutate(Date = format(Date, format="%m-%d"))
+
+
 # Turn hourly data into 8-hour time chunks, keeping only the columns
 # that will be used in the predictive models. Hourly bike counts will
 # be taken a sum of each hour over the 8-hour chunk, wind speed will

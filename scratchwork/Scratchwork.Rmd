@@ -57,7 +57,7 @@ Variables in Model:
 
 Load in Seoul bike data
 ```{r message=FALSE}
-seoul <- read_csv("SeoulBikeData.csv")
+seoul <- read_csv("package/bikeSharing/data-raw/SeoulBikeData.csv")
 dim(seoul)
 spec(seoul)
 ```
@@ -86,6 +86,8 @@ We next want to add a "weekend" variable. We can convert the `Date` column into 
 seoul <- seoul %>% 
   mutate(Date = as.Date(Date, format = "%d/%m/%Y")) %>% 
   mutate(Weekend = ifelse(weekdays(Date) == "Saturday" | weekdays(Date) == "Sunday", 1, 0))
+
+
 table(seoul$Weekend)
 ```
 
@@ -116,6 +118,13 @@ seoul <- seoul %>%
          Season = Seasons,
          Is_holiday = Holiday)
 ```
+
+
+Make Date only day and month
+```{r}
+seoul <- seoul %>% mutate(Date = format(Date, format="%m-%d"))
+```
+
 
 ### Hourly version
 
@@ -260,31 +269,30 @@ seoul_data <- seoul_hourly_chunks_8hr
 
 ## Random Forest
 ```{r}
-x=seoul_data%>%select(Hour_chunks,Min_T,Max_T,Min_H,Max_H,Wind_speed,
-              Rain_or_snow,Is_weekend,Season,Is_holiday,Date)%>%
-  mutate(Hour_chunks=as.character(Hour_chunks,levels = c("[0,8)","[8,16)" ,"[16,24)")),
-         Rain_or_snow=as.character(Rain_or_snow),
-         Is_weekend=as.character(Is_weekend),
-         Season=as.character(Season),
-         Is_holiday=as.character(Is_holiday),
-         Date=as.character(Date)
-         )
-y=unlist(seoul_data%>%select(Bike_count))
+
+x = subset(seoul_data, select=-c(Bike_count))
+##y=unlist(seoul_data%>%%>%select(Bike_count))
+y=unlist(seoul_data%>% ungroup()%>%select(Bike_count)) ## I had to add ungroup() for this to work on my laptop
 
 library(caret)
 library(ggplot2)
 library(tidyverse)
 library(egg)
 library(data.table)
+library(randomForest)
+
+
 trCtl <- trainControl(method="cv", number=5, savePredictions=TRUE)
 rf.fit <- train(x, y, method="rf", trControl=trCtl)
 rf.fit$bestTune
-rf.fit$results[rownames(rf.fit$bestTune),]$Rsquared
+rf.fit$results[rownames(rf.fit$bestTune),]
+
+
 model1 <- randomForest(Bike_count ~ Hour_chunks + Min_T + Max_T + Min_H + Max_H + Wind_speed +
                          Rain_or_snow + Is_weekend + Season + Is_holiday + Date, 
-                       data = data_all, importance=TRUE, ntree=500, mtry = 11, do.trace=100)
+                       data = seoul_data, importance=TRUE, ntree=500, mtry = 11, do.trace=100)
 
-reprtree:::plot.getTree(model1,k=1,depth=4)
+#reprtree:::plot.getTree(model1,k=1,depth=4)
 importance_matrix=model1$importance %>% as.data.frame(check.names=F)
 setorder(importance_matrix,-`%IncMSE`)
 ggplot(importance_matrix,aes(x=`%IncMSE`,y=IncNodePurity))+geom_point(color="grey30",alpha=0.7)+
@@ -293,14 +301,22 @@ ggplot(importance_matrix,aes(x=`%IncMSE`,y=IncNodePurity))+geom_point(color="gre
                                     rep("",nrow(importance_matrix)-5)),nudge_x=0.5,min.segment.length=0)+
   xlab("Increase in MSE")+
   ylab("Increase in node purity")
+
+
+
+
 ```
+
+
+
+
 
 
 # London bike data
 
 Load in London bike data:
 ```{r}
-london <- read_csv("LondonBikeData.csv")
+london <- read_csv("package/bikeSharing/data-raw/LondonBikeData.csv")
 dim(london)
 spec(london)
 ```
@@ -355,6 +371,13 @@ london <- london %>%
          )
 ```
 
+Make Date only day and month
+```{r}
+london <- london %>% mutate(Date = format(Date, format="%m-%d"))
+```
+
+
+
 Keep only the columns that will be used as variables in our model:     
 
 ```{r}
@@ -382,7 +405,7 @@ ggplot(london, aes(x = Hour, y = Bike_count)) + geom_point(shape = 21)
 # DC bike data
 
 ```{r}
-dc <- read_csv("DCBikeData.csv")
+dc <- read_csv("package/bikeSharing/data-raw/DCBikeData.csv")
 dim(dc)
 spec(dc)
 ```
@@ -435,6 +458,13 @@ dc <- dc %>%
          Hour = hr)
 ```
 
+Make Date only day and month
+```{r}
+dc <- dc %>% mutate(Date = format(Date, format="%m-%d"))
+```
+
+
+
 Keep only the columns that will be used as variables in our model:     
 
 ```{r}
@@ -460,4 +490,77 @@ dc_data <- dc %>%
 
 ```{r}
 ggplot(dc, aes(x = Hour, y = Bike_count)) + geom_point(shape = 21)
+```
+
+
+
+## Compare Fit of Models
+```{r}
+
+
+
+## Predict Values
+y.pred_seoul = predict(rf.fit, subset(seoul_data, select=-c(Bike_count)))
+y.pred_london = predict(rf.fit, subset(london_data, select=-c(Bike_count)))
+y.pred_dc = predict(rf.fit, subset(dc_data, select=-c(Bike_count)))
+
+
+
+## Obtained RMSE, R squared, MAE, with corresponding SD
+sqrt(mean((seoul_data$Bike_count - y.pred_seoul)^2)) ## RMSE
+mean(abs(seoul_data$Bike_count - y.pred_seoul)) ## MAE
+cor(seoul_data$Bike_count, y.pred_seoul, use = "pairwise.complete.obs")^2 ## R squared
+
+
+scale_london = mean(london_data$Bike_count)/ mean(seoul_data$Bike_count)
+scale_dc = mean(dc_data$Bike_count)/ mean(seoul_data$Bike_count)
+
+sqrt(mean((london_data$Bike_count - y.pred_london*scale_london)^2)) ## RMSE
+mean(abs(london_data$Bike_count - y.pred_london*scale_london)) ## MAE
+cor(london_data$Bike_count, y.pred_london*scale_london, use = "pairwise.complete.obs")^2 ## R squared
+
+
+
+
+sqrt(mean((dc_data$Bike_count - y.pred_dc*scale_dc)^2)) ## RMSE
+mean(abs(dc_data$Bike_count - y.pred_dc*scale_dc)) ## MAE
+cor(dc_data$Bike_count, y.pred_dc*scale_dc, use = "pairwise.complete.obs")^2 ## R squared
+
+
+## Function to Assess Model Fit
+model_fit <- function(model, data, scale_seoul_mean = "no"){
+  
+  ## Predict Values
+  pred = predict(model, subset(data, select = -c(Bike_count)))
+  
+  
+  ## Scale to seoul bike count mean
+  if(scale_seoul_mean == "yes"){
+    ## Scaling Factor
+     scale = mean(data$Bike_count)/
+       mean(seoul_data$Bike_count)
+    pred = pred * scale
+  }
+  
+  ## Obtained RMSE
+  RMSE = sqrt(mean((data$Bike_count - pred)^2))
+  
+  ## Obtain MAE
+  MAE = mean(abs(data$Bike_count - pred)) 
+  
+  ## Obtain R^2
+  R2 = cor(data$Bike_count, pred, use = "pairwise.complete.obs")^2 ## R squared
+  
+  
+  ## Combine into data frame
+  model_fit = data.frame(RMSE = RMSE, MAE = MAE, R2 = R2)
+  
+  return(model_fit)
+}
+
+model_fit(rf.fit, seoul_data, scale_seoul_mean = "no") 
+model_fit(rf.fit, london_data, scale_seoul_mean = "yes") 
+model_fit(rf.fit, dc_data, scale_seoul_mean = "yes") 
+
+
 ```
