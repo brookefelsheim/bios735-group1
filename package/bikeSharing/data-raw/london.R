@@ -23,6 +23,10 @@ london <- london %>%
 london <- london %>%
   mutate(Hour = as.numeric(sub(":.*", "", sub(".* ", "", london$timestamp))))
 
+# Add day of the year column
+london <- london %>%
+  mutate(Day = as.numeric(strftime(Date, format = "%j")))
+
 # Create rain or snow column
 london <- london %>%
   mutate(Rain_or_snow = ifelse(weather_code %in% c(7, 10, 26), 1, 0))
@@ -58,13 +62,18 @@ london <- london %>%
 # over the 8-hour chunk and false (0) otherwise.
 london$Hour_chunks <- cut(london$Hour, c(0,8,16,24), right = FALSE)
 london <- london %>%
-  group_by(Date, Hour_chunks, Min_temp, Max_temp, Min_humidity, Max_humidity,
-           Is_weekend, Season, Is_holiday) %>%
+  group_by(Date, Hour_chunks, Day, Is_weekend, Is_holiday, Season,
+           Min_temp, Max_temp, Min_humidity, Max_humidity) %>%
   summarise(
     Wind_speed = mean(Wind_speed),
     Rain_or_snow = if( sum(Rain_or_snow > 0) > 0 ) {1} else {0},
     Bike_count = sum(Bike_count)
   )
+
+# Add column that gives chronological order of observations
+london <- london %>%
+  arrange(Date, Hour_chunks)
+london$Order <- 1:nrow(london)
 
 london <- data.frame(london)
 

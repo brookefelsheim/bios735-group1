@@ -22,6 +22,10 @@ seoul <- seoul %>%
 seoul <- seoul %>%
   mutate(Date = as.Date(Date, format = "%d/%m/%Y"))
 
+# Add day of the year column
+seoul <- seoul %>%
+  mutate(Day = as.numeric(strftime(Date, format = "%j")))
+
 # Create a weekend column
 seoul <- seoul %>%
   mutate(Weekend = ifelse(weekdays(Date) == "Saturday" |
@@ -60,13 +64,18 @@ seoul <- seoul %>%
 # over the 8-hour chunk and false (0) otherwise.
 seoul$Hour_chunks <- cut(seoul$Hour, c(0,8,16,24), right = FALSE)
 seoul <- seoul %>%
-  group_by(Date, Hour_chunks, Min_temp, Max_temp, Min_humidity, Max_humidity,
-           Is_weekend, Season, Is_holiday) %>%
+  group_by(Date, Hour_chunks, Day, Is_weekend, Is_holiday, Season,
+           Min_temp, Max_temp, Min_humidity, Max_humidity) %>%
   summarise(
     Wind_speed = mean(Wind_speed),
     Rain_or_snow = if( sum(Rain_or_snow > 0) > 0 ) {1} else {0},
     Bike_count = sum(Bike_count)
   )
+
+# Add column that gives chronological order of observations
+seoul <- seoul %>%
+  arrange(Date, Hour_chunks)
+seoul$Order <- 1:nrow(seoul)
 
 seoul <- data.frame(seoul)
 
