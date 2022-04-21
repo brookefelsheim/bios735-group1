@@ -22,8 +22,9 @@ load("package/bikeSharing/data/seoul.rda")
 ```{r}
 require(foreign)
 require(MASS)
-fit_model = glm.nb(Bike_count ~ Hour_chunks + Is_weekend + Is_holiday + Season + Min_temp + Max_temp + Min_humidity + Max_humidity + Wind_speed + Rain_or_snow, data = seoul)
+fit_model = glm.nb(Bike_count ~ Hour_chunks + Max_temp + Rain_or_snow, data = seoul)
 summary(fit_model)
+
 ```
 
 ```{r cars}
@@ -46,7 +47,6 @@ g.sim = function(u){
 sample.gamma.posterior.i = function(yi, xi, M, maxit, thetat, betat, s2gammat, trace = 0) {
   
   gammai = rep(0,M)
-  
   gammai[1] = rnorm(1, 0, sqrt(s2gammat))
   lambdai = exp(xi %*% betat + gammai[1])
   
@@ -58,6 +58,8 @@ sample.gamma.posterior.i = function(yi, xi, M, maxit, thetat, betat, s2gammat, t
     lambdai = exp(xi %*% betat + gammai[i+1])
     p_i0 = (exp(-thetat)+1)/(exp(-thetat)+2)
     r_i0 = lambdai0 * (exp(-thetat)+1)
+    p_i = (exp(-thetat)+1)/(exp(-thetat)+2)
+    r_i = lambdai * (exp(-thetat)+1)
     
     L1 = prod(dnbinom(yi,size = r_i, prob = p_i))*dnorm(gammai[i+1],
                                                  mean = 0,sd=sqrt(s2gammat))
@@ -100,9 +102,8 @@ sample.gamma.posterior.all = function(data,
   n=length(unique_date)
   samples = matrix(NA,nrow = n, ncol = M)
   
-  X = model.matrix( Bike_count ~ Hour_chunks + Is_weekend + Is_holiday + Season + Min_temp + Max_temp + Min_humidity + Max_humidity + Wind_speed + Rain_or_snow, data = data)
+  X = model.matrix( Bike_count ~ Hour_chunks + Max_temp  + Rain_or_snow, data = data)
 
-  
   ## looping over n subjects
   for (i in 1:n) {
     
@@ -111,7 +112,7 @@ sample.gamma.posterior.all = function(data,
     # draw M samples from the posterior for gamma_i
     samples.i =
       sample.gamma.posterior.i(
-        yi = data[data$Date == unique_date[i], "Bike_count"],
+        yi = data[data$Date == unique_date[i], Bike_count],
         xi =  X[data$Date == unique_date[i],],
         M = M,
         maxit = maxit,
@@ -183,16 +184,18 @@ Q = function(data,
     s2gammat = exp(s2gammat)
   }
   
+  unique_date = unique(data$Date)
+  
   # initialize sum
   Q = 0
   
   ## Obtain Model.Matrix
-   X = model.matrix( Bike_count ~ Hour_chunks + Is_weekend + Is_holiday + Season + Min_temp + Max_temp + Min_humidity + Max_humidity + Wind_speed + Rain_or_snow, data = data)
+  X = model.matrix( Bike_count ~ Hour_chunks + Max_temp  + Rain_or_snow, data = data)
   
               
   # loop over subjects
   for (i in 1:353) {
-    Q = Q + Qi(yi = data[data$Date == unique_date[i], "Bike_count"],
+    Q = Q + Qi(yi = data[data$Date == unique_date[i], Bike_count],
         xi =  X[data$Date == unique_date[i],],
         thetat = thetat,
                betat = betat,
@@ -209,15 +212,13 @@ Q = function(data,
   maxit = 100
   iter = 0
   eps = 10000
-  qfunction = -10000 # using Qfunction for convergence
+  qfunction = -1000000 # using Qfunction for convergence
   
 # starting values taken from simple glm
 ## MAKE THIS CHANGEABLE IF A FUNCTION
-  beta = c(7.48, 0.8, 1.06, -0.15, -0.23, - 0.296,
-           -0.179, -0.725, -0.014, 0.047, -0.0042, -0.002217,
-           0.00875, -0.477)
-  theta = 5.76
-  s2gamma = 1
+  beta = c(7.01, 0.8, 1.07, 0.047, -0.58)
+  theta = 4.542
+  s2gamma = 0.2
 
 # Length of chain
   M = 10000
@@ -245,37 +246,41 @@ Q = function(data,
       thetat = theta,
       betat = beta,
       s2gammat = s2gamma,
-      trace = 1
+      trace = 0
     )
  
-    qfunction[iter+1] = Q(data = seoul, 
+    qfunction = Q(data = seoul, 
+                          thetat = theta,
                   betat = beta, 
                   s2gammat = s2gamma, 
-                  rejection.samples = rejection.samples,
+                  samples = samples,
                   burn_in = burn.in)
-    print(qfunction[iter+1])
+
+    
+    print(qfunction)
       
 
-    eps  = abs(qfunction[iter+1] - qfunction0) / abs(qfunction0)
+    eps  = abs(qfunction - qfunction0) / abs(qfunction0)
   
     
   ## Start M-step : nelder mead
     fit = optimx(
       # initial values for the parameters
-      par = c(beta, log(s2gamma)),
+      par = c(beta, theta, log(s2gamma)),
       # Q function wrapper
-      fn = function(x, data, rejection.samples){
+      fn = function(x, data, samples){
             Q(data = seoul, 
               betat = x[1:length(beta)], 
-              s2gammat = x[length(beta)+1], 
-              rejection.samples = rejection.samples,
+              thetat = x[length(beta)+1],
+              s2gammat = x[length(beta)+2], 
+              samples = samples,
               logs2gammat = T,
               burn_in = burn.in# indicating s2gamma on log scale! 
             )   
         }, 
       method = "Nelder-Mead",
       data = data,
-      rejection.samples = rejection.samples,
+      samples = samples,
       control = list(
         trace = 0, 
         maximize = T, 
@@ -285,7 +290,8 @@ Q = function(data,
     
 
     beta = as.numeric(fit[1:length(beta)])
-    s2gamma = as.numeric(fit[length(beta)+1])
+    theta = as.numeric(fit[length(beta)+1])
+    s2gamma = as.numeric(fit[length(beta)+2])
 
     s2gamma = exp(s2gamma)
 
