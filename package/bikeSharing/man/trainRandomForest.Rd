@@ -12,7 +12,8 @@ with columns Bike_count, Hour_chunks,
 Max_temp, and Rain_or_snow}
 }
 \value{
-an object of class randomForest
+an object of class train containing the
+fit random forest model
 }
 \description{
 This function trains a random forest model on bike

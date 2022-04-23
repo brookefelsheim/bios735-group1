@@ -4,10 +4,16 @@
 \alias{plotRandomForestImportance}
 \title{Plot random forest variable importance}
 \usage{
-plotRandomForestImportance(model)
+plotRandomForestImportance(data, mtry = 2)
 }
 \arguments{
-\item{model}{an object of class randomForest}
+\item{data}{pre-processed bike sharing data frame
+with columns Bike_count, Hour_chunks,
+Max_temp, and Rain_or_snow}
+
+\item{mtry}{the mtry value from the model$bestTune
+parameter of the trained random forest
+model using the trainRandomForest(data)}
 }
 \value{
 a ggplot object

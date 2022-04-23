@@ -8,26 +8,23 @@
 #'             with columns Bike_count, Hour_chunks,
 #'             Max_temp, and Rain_or_snow
 #'
-#' @return an object of class randomForest
+#' @return an object of class train containing the
+#'         fit random forest model
 #'
-#' @import randomForest
+#' @import caret
 #'
 #' @export
 trainRandomForest <- function(data) {
 
-  if (!is.data.frame(data)) {
-    stop("Input data is not a data frame")
-  }
-  if (!all(c("Bike_count", "Hour_chunks", "Max_temp", "Rain_or_snow") %in%
-          colnames(seoul))) {
-    stop("Input data does not contain all necessary columns:
-         Bike_count, Hour_chunks, Max_temp, and Rain_or_snow")
-  }
+  checkBikeData(data)
 
-  model <- randomForest(Bike_count ~ Hour_chunks + Max_temp + Rain_or_snow,
-                        data = data, importance=TRUE, ntree=500,
-                        mtry = 3, do.trace=100)
-  return(model)
+  x = subset(data, select = c("Hour_chunks", "Max_temp", "Rain_or_snow"))
+  y = data$Bike_count
+
+  trCtl <- trainControl(method="cv", number=5, savePredictions=TRUE)
+  rf.fit <- train(x, y, method="rf", trControl=trCtl)
+
+  return(rf.fit)
 }
 
 #' Plot random forest variable importance
@@ -36,19 +33,31 @@ trainRandomForest <- function(data) {
 #' purity vs. the amount of increase in MSE that a
 #' each variable in a random forest model provides
 #'
-#' @param model an object of class randomForest
+#' @param data pre-processed bike sharing data frame
+#'             with columns Bike_count, Hour_chunks,
+#'             Max_temp, and Rain_or_snow
+#' @param mtry the mtry value from the model$bestTune
+#'             parameter of the trained random forest
+#'             model using the trainRandomForest(data)
 #'
 #' @return a ggplot object
 #'
 #' @import ggplot2
-#' @import randomForest
+#' @importFrom randomForest randomForest
 #' @importFrom data.table setorder
 #' @importFrom ggrepel geom_label_repel
 #'
 #' @export
-plotRandomForestImportance <- function(model) {
-  importance_matrix <- model$importance %>% as.data.frame(check.names=F)
+plotRandomForestImportance <- function(data, mtry = 2) {
+
+  checkBikeData(data)
+
+  model <- randomForest(Bike_count ~ Hour_chunks + Max_temp + Rain_or_snow,
+                         data = data, importance=TRUE, ntree=500, mtry = mtry)
+
+  importance_matrix <- model$importance %>% as.data.frame(check.names = F)
   setorder(importance_matrix, -`%IncMSE`)
+
   g <- ggplot(importance_matrix,aes(x =`%IncMSE`, y = IncNodePurity)) +
     geom_point(color = "grey30", alpha = 0.7) +
     theme_article() +
@@ -56,4 +65,6 @@ plotRandomForestImportance <- function(model) {
                               nudge_x = 0.5, min.segment.length = 0) +
     xlab("Increase in MSE") +
     ylab("Increase in node purity")
+
+  return(g)
 }
