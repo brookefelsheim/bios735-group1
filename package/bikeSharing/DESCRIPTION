@@ -30,3 +30,12 @@ RoxygenNote: 7.1.2
 Depends: 
     R (>= 2.10)
 LazyData: true
+Imports: 
+    magrittr,
+    randomForest,
+    ggplot2,
+    data.table,
+    ggrepel
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
