@@ -14,7 +14,7 @@
 #' @import caret
 #'
 #' @export
-trainRandomForest <- function(data) {
+train_random_forest <- function(data) {
 
   checkBikeData(data)
 
@@ -49,7 +49,7 @@ trainRandomForest <- function(data) {
 #' @importFrom ggrepel geom_label_repel
 #'
 #' @export
-plotRandomForestImportance <- function(data, mtry = 4) {
+plot_rf_importance <- function(data, mtry = 4) {
 
   checkBikeData(data)
 
