@@ -35,7 +35,8 @@ Imports:
     randomForest,
     ggplot2,
     data.table,
-    ggrepel
+    ggrepel,
+    caret
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
