@@ -2,6 +2,7 @@
 
 export("%>%")
 export(plotRandomForestImportance)
+export(rfModelFit)
 export(trainRandomForest)
 import(caret)
 import(ggplot2)
