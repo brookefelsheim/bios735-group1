@@ -6,7 +6,7 @@
 #'
 #' @param data pre-processed bike sharing data frame
 #'             with columns Bike_count, Hour_chunks,
-#'             Max_temp, and Rain_or_snow
+#'             Max_temp, Rain_or_snow, and Date
 #'
 #' @return an object of class train containing the
 #'         fit random forest model
@@ -18,7 +18,8 @@ trainRandomForest <- function(data) {
 
   checkBikeData(data)
 
-  x = subset(data, select = c("Hour_chunks", "Max_temp", "Rain_or_snow"))
+  x = subset(data,
+             select = c("Hour_chunks", "Max_temp", "Rain_or_snow", "Date"))
   y = data$Bike_count
 
   trCtl <- trainControl(method="cv", number=5, savePredictions=TRUE)
@@ -35,7 +36,7 @@ trainRandomForest <- function(data) {
 #'
 #' @param data pre-processed bike sharing data frame
 #'             with columns Bike_count, Hour_chunks,
-#'             Max_temp, and Rain_or_snow
+#'             Max_temp, Rain_or_snow, and Date
 #' @param mtry the mtry value from the model$bestTune
 #'             parameter of the trained random forest
 #'             model using the trainRandomForest(data)
@@ -48,7 +49,7 @@ trainRandomForest <- function(data) {
 #' @importFrom ggrepel geom_label_repel
 #'
 #' @export
-plotRandomForestImportance <- function(data, mtry = 2) {
+plotRandomForestImportance <- function(data, mtry = 4) {
 
   checkBikeData(data)
 
