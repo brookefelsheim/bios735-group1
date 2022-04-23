@@ -18,7 +18,7 @@ trainRandomForest <- function(data) {
   if (!is.data.frame(data)) {
     stop("Input data is not a data frame")
   }
-  if (all(c("Bike_count", "Hour_chunks", "Max_temp", "Rain_or_snow") %in%
+  if (!all(c("Bike_count", "Hour_chunks", "Max_temp", "Rain_or_snow") %in%
           colnames(seoul))) {
     stop("Input data does not contain all necessary columns:
          Bike_count, Hour_chunks, Max_temp, and Rain_or_snow")
