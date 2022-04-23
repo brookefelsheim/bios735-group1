@@ -44,6 +44,7 @@ train_random_forest <- function(data) {
 #' @return a ggplot object
 #'
 #' @import ggplot2
+#' @import magrittr
 #' @importFrom randomForest randomForest
 #' @importFrom data.table setorder
 #' @importFrom ggrepel geom_label_repel
@@ -54,7 +55,7 @@ plot_rf_importance <- function(data, mtry = 4) {
   checkBikeData(data)
 
   model <- randomForest(Bike_count ~ Hour_chunks + Max_temp + Rain_or_snow,
-                         data = data, importance=TRUE, ntree=500, mtry = mtry)
+                         data = data, importance = TRUE, ntree = 500, mtry = mtry)
 
   importance_matrix <- model$importance %>% as.data.frame(check.names = F)
   setorder(importance_matrix, -`%IncMSE`)
