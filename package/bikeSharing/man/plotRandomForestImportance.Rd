@@ -4,12 +4,12 @@
 \alias{plotRandomForestImportance}
 \title{Plot random forest variable importance}
 \usage{
-plotRandomForestImportance(data, mtry = 2)
+plotRandomForestImportance(data, mtry = 4)
 }
 \arguments{
 \item{data}{pre-processed bike sharing data frame
 with columns Bike_count, Hour_chunks,
-Max_temp, and Rain_or_snow}
+Max_temp, Rain_or_snow, and Date}
 
 \item{mtry}{the mtry value from the model$bestTune
 parameter of the trained random forest

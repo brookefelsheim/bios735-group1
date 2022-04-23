@@ -9,7 +9,7 @@ trainRandomForest(data)
 \arguments{
 \item{data}{pre-processed bike sharing data frame
 with columns Bike_count, Hour_chunks,
-Max_temp, and Rain_or_snow}
+Max_temp, Rain_or_snow, and Date}
 }
 \value{
 an object of class train containing the
