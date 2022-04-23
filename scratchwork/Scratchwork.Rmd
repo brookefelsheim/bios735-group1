@@ -301,12 +301,20 @@ ggplot(importance_matrix,aes(x=`%IncMSE`,y=IncNodePurity))+geom_point(color="gre
   ylab("Increase in node purity")
 
 
+# compare important variables with lmer
+chunk_8hr = lmer(Bike_count ~ Hour_chunks + Min_T + Max_T + Min_H + Max_H + Wind_speed +
+         Rain_or_snow + Is_weekend + Season + Is_holiday + (1|Date), data = seoul_hourly_chunks_8hr, REML = T)
+# no random effect
+chunk_8hr_1 = lm(Bike_count ~ Hour_chunks + Min_T + Max_T + Min_H + Max_H + Wind_speed +
+         Rain_or_snow + Is_weekend + Season + Is_holiday+Date, data = seoul_hourly_chunks_8hr)
+# no date
+chunk_8hr_2 = lm(Bike_count ~ Hour_chunks + Min_T + Max_T + Min_H + Max_H + Wind_speed +
+         Rain_or_snow + Is_weekend + Season + Is_holiday, data = seoul_hourly_chunks_8hr)
+anova(chunk_8hr,chunk_8hr_1)
+anova(chunk_8hr,chunk_8hr_2)
 
-
+anova(chunk_8hr)
 ```
-
-
-
 
 
 
