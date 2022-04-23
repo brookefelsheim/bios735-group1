@@ -22,7 +22,11 @@ Authors@R:
            family = "Qian",
            role = c("aut"),
            email = "qianqxj@live.unc.edu"))
-Description: What the package does (one paragraph).
+Description: Package for predicting bike sharing demand from weather, date, and 
+    time of day information. Trains on data sourced from the Seoul Metropolitan
+    Government and tests on data sourced from Transport for London and Capital
+    Bikeshare in Washington, D.C. Contains functions for training a negative 
+    binomial generalized linear mixed model and a random forest model.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
