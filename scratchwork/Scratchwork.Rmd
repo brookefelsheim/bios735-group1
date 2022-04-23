@@ -57,7 +57,7 @@ Variables in Model:
 
 Load in Seoul bike data
 ```{r message=FALSE}
-seoul <- read_csv("package/bikeSharing/data-raw/SeoulBikeData.csv")
+seoul <- read_csv("./package/bikeSharing/data-raw/SeoulBikeData.csv")
 dim(seoul)
 spec(seoul)
 ```
@@ -269,17 +269,16 @@ seoul_data <- seoul_hourly_chunks_8hr
 
 ## Random Forest
 ```{r}
-
-x = subset(seoul_data, select=-c(Bike_count))
-##y=unlist(seoul_data%>%%>%select(Bike_count))
-y=unlist(seoul_data%>% ungroup()%>%select(Bike_count)) ## I had to add ungroup() for this to work on my laptop
-
 library(caret)
 library(ggplot2)
 library(tidyverse)
 library(egg)
 library(data.table)
 library(randomForest)
+set.seed(735)
+x = subset(seoul_data, select=-c(Bike_count))
+##y=unlist(seoul_data%>%%>%select(Bike_count))
+y=unlist(seoul_data%>% ungroup()%>%dplyr::select(Bike_count)) ## I had to add ungroup() for this to work on my laptop
 
 
 trCtl <- trainControl(method="cv", number=5, savePredictions=TRUE)
@@ -287,12 +286,11 @@ rf.fit <- train(x, y, method="rf", trControl=trCtl)
 rf.fit$bestTune
 rf.fit$results[rownames(rf.fit$bestTune),]
 
-
 model1 <- randomForest(Bike_count ~ Hour_chunks + Min_T + Max_T + Min_H + Max_H + Wind_speed +
                          Rain_or_snow + Is_weekend + Season + Is_holiday + Date, 
                        data = seoul_data, importance=TRUE, ntree=500, mtry = 11, do.trace=100)
 
-#reprtree:::plot.getTree(model1,k=1,depth=4)
+reprtree:::plot.getTree(model1,k=2,depth=4)
 importance_matrix=model1$importance %>% as.data.frame(check.names=F)
 setorder(importance_matrix,-`%IncMSE`)
 ggplot(importance_matrix,aes(x=`%IncMSE`,y=IncNodePurity))+geom_point(color="grey30",alpha=0.7)+
