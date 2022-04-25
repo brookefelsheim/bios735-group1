@@ -313,7 +313,9 @@ chunk_8hr_2 = lm(Bike_count ~ Hour_chunks + Min_T + Max_T + Min_H + Max_H + Wind
 anova(chunk_8hr,chunk_8hr_1)
 anova(chunk_8hr,chunk_8hr_2)
 
-anova(chunk_8hr)
+lmer_aic=drop1(chunk_8hr,ddf = "lme4")
+setorder(lmer_aic,-AIC)
+
 ```
 
 
