@@ -1,0 +1,115 @@
+>	output = MCEM_algorithm( beta_initial = c(7.5, 0.5, 1.0, -0.25, -0.25, -0.25, -0.25, -0.75, 0, 0, 0, 0, 0, -0.5),
+>	                         theta_initial = 4.5,
+>	                         s2gamma_initial = 0.2,
+>	                         M = 1000,
+>	                         burn.in = 200,
+>	                         tol = 10^-4,
+>	                         maxit = 100,
+>	                         data = seoul
+>	)
+
+
+
+[1] -10169.61
+Maximizing -- use negfn and neggr
+Iter: 1 Qf: -10169.605 s2gamma: 0.572758 Intercept: 7.506  Hour_Chunks[8,16):0.721  Hour_chunks[16,24): 0.984  Is_weekend:-0.235 Is_holiday:-0.271 SeasonSpring:-0.323
+                SeasonSummer:-0.289 SeasonWinter:-0.773 Min_temp:0.006 Max_temp:0.006 Min_humidity:-0.003 Max_humidity:0.001 Wind_speed:0.029 Rain_or_snow:-0.539 theta:4.612 eps:0.989830
+[1] -9822.085
+Maximizing -- use negfn and neggr
+Iter: 2 Qf: -9822.085 s2gamma: 0.542152 Intercept: 7.593  Hour_Chunks[8,16):0.766  Hour_chunks[16,24): 1.025  Is_weekend:-0.225 Is_holiday:-0.220 SeasonSpring:-0.340
+                SeasonSummer:-0.275 SeasonWinter:-0.795 Min_temp:0.006 Max_temp:0.007 Min_humidity:-0.002 Max_humidity:0.001 Wind_speed:0.023 Rain_or_snow:-0.546 theta:5.247 eps:0.034172
+[1] -9753.171
+Maximizing -- use negfn and neggr
+Iter: 3 Qf: -9753.171 s2gamma: 0.454633 Intercept: 7.603  Hour_Chunks[8,16):0.779  Hour_chunks[16,24): 1.033  Is_weekend:-0.219 Is_holiday:-0.227 SeasonSpring:-0.323
+                SeasonSummer:-0.252 SeasonWinter:-0.776 Min_temp:0.009 Max_temp:0.005 Min_humidity:-0.002 Max_humidity:0.001 Wind_speed:0.020 Rain_or_snow:-0.570 theta:5.761 eps:0.007016
+[1] -9705.774
+Maximizing -- use negfn and neggr
+Iter: 4 Qf: -9705.774 s2gamma: 0.431250 Intercept: 7.681  Hour_Chunks[8,16):0.785  Hour_chunks[16,24): 1.028  Is_weekend:-0.199 Is_holiday:-0.191 SeasonSpring:-0.309
+                SeasonSummer:-0.237 SeasonWinter:-0.765 Min_temp:0.010 Max_temp:0.006 Min_humidity:-0.003 Max_humidity:0.001 Wind_speed:0.020 Rain_or_snow:-0.552 theta:5.887 eps:0.004860
+[1] -9672.238
+Maximizing -- use negfn and neggr
+Iter: 5 Qf: -9672.238 s2gamma: 0.356502 Intercept: 7.702  Hour_Chunks[8,16):0.777  Hour_chunks[16,24): 1.022  Is_weekend:-0.187 Is_holiday:-0.147 SeasonSpring:-0.266
+                SeasonSummer:-0.165 SeasonWinter:-0.770 Min_temp:0.010 Max_temp:0.006 Min_humidity:-0.004 Max_humidity:0.001 Wind_speed:0.021 Rain_or_snow:-0.545 theta:6.190 eps:0.003455
+[1] -9636.501
+Maximizing -- use negfn and neggr
+Iter: 6 Qf: -9636.501 s2gamma: 0.254653 Intercept: 7.737  Hour_Chunks[8,16):0.778  Hour_chunks[16,24): 1.034  Is_weekend:-0.177 Is_holiday:-0.217 SeasonSpring:-0.281
+                SeasonSummer:-0.169 SeasonWinter:-0.766 Min_temp:0.011 Max_temp:0.008 Min_humidity:-0.005 Max_humidity:0.001 Wind_speed:0.016 Rain_or_snow:-0.546 theta:6.320 eps:0.003695
+[1] -9572.304
+Maximizing -- use negfn and neggr
+Iter: 7 Qf: -9572.304 s2gamma: 0.205180 Intercept: 7.764  Hour_Chunks[8,16):0.800  Hour_chunks[16,24): 1.064  Is_weekend:-0.173 Is_holiday:-0.179 SeasonSpring:-0.243
+                SeasonSummer:-0.148 SeasonWinter:-0.730 Min_temp:0.014 Max_temp:0.007 Min_humidity:-0.006 Max_humidity:0.002 Wind_speed:-0.000 Rain_or_snow:-0.545 theta:6.682 eps:0.006662
+[1] -9521.858
+Maximizing -- use negfn and neggr
+Iter: 8 Qf: -9521.858 s2gamma: 0.158836 Intercept: 7.801  Hour_Chunks[8,16):0.788  Hour_chunks[16,24): 1.047  Is_weekend:-0.159 Is_holiday:-0.204 SeasonSpring:-0.243
+                SeasonSummer:-0.155 SeasonWinter:-0.746 Min_temp:0.016 Max_temp:0.007 Min_humidity:-0.006 Max_humidity:0.002 Wind_speed:0.006 Rain_or_snow:-0.564 theta:6.591 eps:0.005270
+[1] -9473.158
+Maximizing -- use negfn and neggr
+Iter: 9 Qf: -9473.158 s2gamma: 0.136665 Intercept: 7.808  Hour_Chunks[8,16):0.803  Hour_chunks[16,24): 1.067  Is_weekend:-0.156 Is_holiday:-0.184 SeasonSpring:-0.212
+                SeasonSummer:-0.128 SeasonWinter:-0.726 Min_temp:0.019 Max_temp:0.007 Min_humidity:-0.007 Max_humidity:0.003 Wind_speed:0.001 Rain_or_snow:-0.557 theta:6.457 eps:0.005115
+[1] -9448.175
+Maximizing -- use negfn and neggr
+Iter: 10 Qf: -9448.175 s2gamma: 0.111812 Intercept: 7.776  Hour_Chunks[8,16):0.783  Hour_chunks[16,24): 1.038  Is_weekend:-0.150 Is_holiday:-0.183 SeasonSpring:-0.226
+                SeasonSummer:-0.141 SeasonWinter:-0.725 Min_temp:0.022 Max_temp:0.007 Min_humidity:-0.007 Max_humidity:0.003 Wind_speed:0.019 Rain_or_snow:-0.563 theta:6.437 eps:0.002637
+[1] -9413.541
+Maximizing -- use negfn and neggr
+Iter: 11 Qf: -9413.541 s2gamma: 0.098359 Intercept: 7.724  Hour_Chunks[8,16):0.777  Hour_chunks[16,24): 1.025  Is_weekend:-0.138 Is_holiday:-0.192 SeasonSpring:-0.252
+                SeasonSummer:-0.183 SeasonWinter:-0.696 Min_temp:0.024 Max_temp:0.009 Min_humidity:-0.008 Max_humidity:0.004 Wind_speed:0.033 Rain_or_snow:-0.561 theta:6.504 eps:0.003666
+[1] -9390.285
+Maximizing -- use negfn and neggr
+Iter: 12 Qf: -9390.285 s2gamma: 0.087256 Intercept: 7.713  Hour_Chunks[8,16):0.794  Hour_chunks[16,24): 1.058  Is_weekend:-0.128 Is_holiday:-0.194 SeasonSpring:-0.262
+                SeasonSummer:-0.164 SeasonWinter:-0.720 Min_temp:0.024 Max_temp:0.008 Min_humidity:-0.008 Max_humidity:0.005 Wind_speed:0.022 Rain_or_snow:-0.573 theta:6.564 eps:0.002470
+[1] -9373.07
+Maximizing -- use negfn and neggr
+Iter: 13 Qf: -9373.070 s2gamma: 0.079735 Intercept: 7.692  Hour_Chunks[8,16):0.790  Hour_chunks[16,24): 1.041  Is_weekend:-0.128 Is_holiday:-0.222 SeasonSpring:-0.250
+                SeasonSummer:-0.175 SeasonWinter:-0.693 Min_temp:0.026 Max_temp:0.008 Min_humidity:-0.008 Max_humidity:0.005 Wind_speed:0.025 Rain_or_snow:-0.572 theta:6.548 eps:0.001833
+[1] -9357.347
+Maximizing -- use negfn and neggr
+Iter: 14 Qf: -9357.347 s2gamma: 0.070619 Intercept: 7.704  Hour_Chunks[8,16):0.800  Hour_chunks[16,24): 1.058  Is_weekend:-0.137 Is_holiday:-0.226 SeasonSpring:-0.242
+                SeasonSummer:-0.169 SeasonWinter:-0.679 Min_temp:0.027 Max_temp:0.007 Min_humidity:-0.008 Max_humidity:0.005 Wind_speed:0.013 Rain_or_snow:-0.591 theta:6.493 eps:0.001677
+[1] -9347.465
+Maximizing -- use negfn and neggr
+Iter: 15 Qf: -9347.465 s2gamma: 0.066905 Intercept: 7.735  Hour_Chunks[8,16):0.793  Hour_chunks[16,24): 1.049  Is_weekend:-0.134 Is_holiday:-0.224 SeasonSpring:-0.242
+                SeasonSummer:-0.182 SeasonWinter:-0.690 Min_temp:0.028 Max_temp:0.007 Min_humidity:-0.008 Max_humidity:0.005 Wind_speed:0.016 Rain_or_snow:-0.571 theta:6.503 eps:0.001056
+[1] -9342.121
+Maximizing -- use negfn and neggr
+Iter: 16 Qf: -9342.121 s2gamma: 0.063446 Intercept: 7.800  Hour_Chunks[8,16):0.794  Hour_chunks[16,24): 1.063  Is_weekend:-0.131 Is_holiday:-0.255 SeasonSpring:-0.229
+                SeasonSummer:-0.155 SeasonWinter:-0.690 Min_temp:0.027 Max_temp:0.007 Min_humidity:-0.008 Max_humidity:0.004 Wind_speed:0.004 Rain_or_snow:-0.559 theta:6.468 eps:0.000572
+[1] -9329.283
+Maximizing -- use negfn and neggr
+Iter: 17 Qf: -9329.283 s2gamma: 0.063580 Intercept: 7.868  Hour_Chunks[8,16):0.791  Hour_chunks[16,24): 1.055  Is_weekend:-0.133 Is_holiday:-0.240 SeasonSpring:-0.237
+                SeasonSummer:-0.156 SeasonWinter:-0.738 Min_temp:0.025 Max_temp:0.008 Min_humidity:-0.008 Max_humidity:0.004 Wind_speed:0.002 Rain_or_snow:-0.541 theta:6.494 eps:0.001374
+[1] -9334.959
+Maximizing -- use negfn and neggr
+Iter: 18 Qf: -9334.959 s2gamma: 0.061851 Intercept: 7.875  Hour_Chunks[8,16):0.790  Hour_chunks[16,24): 1.045  Is_weekend:-0.134 Is_holiday:-0.237 SeasonSpring:-0.241
+                SeasonSummer:-0.146 SeasonWinter:-0.726 Min_temp:0.025 Max_temp:0.008 Min_humidity:-0.009 Max_humidity:0.004 Wind_speed:0.004 Rain_or_snow:-0.545 theta:6.391 eps:0.000608
+[1] -9330.072
+Maximizing -- use negfn and neggr
+Iter: 19 Qf: -9330.072 s2gamma: 0.059726 Intercept: 7.911  Hour_Chunks[8,16):0.801  Hour_chunks[16,24): 1.055  Is_weekend:-0.139 Is_holiday:-0.256 SeasonSpring:-0.250
+                SeasonSummer:-0.160 SeasonWinter:-0.737 Min_temp:0.027 Max_temp:0.007 Min_humidity:-0.009 Max_humidity:0.004 Wind_speed:-0.002 Rain_or_snow:-0.549 theta:6.374 eps:0.000524
+[1] -9326.134
+Maximizing -- use negfn and neggr
+Iter: 20 Qf: -9326.134 s2gamma: 0.057593 Intercept: 7.932  Hour_Chunks[8,16):0.787  Hour_chunks[16,24): 1.065  Is_weekend:-0.150 Is_holiday:-0.268 SeasonSpring:-0.285
+                SeasonSummer:-0.179 SeasonWinter:-0.765 Min_temp:0.025 Max_temp:0.009 Min_humidity:-0.010 Max_humidity:0.004 Wind_speed:0.000 Rain_or_snow:-0.532 theta:6.373 eps:0.000422
+[1] -9321.215
+Maximizing -- use negfn and neggr
+Iter: 21 Qf: -9321.215 s2gamma: 0.056806 Intercept: 7.938  Hour_Chunks[8,16):0.789  Hour_chunks[16,24): 1.063  Is_weekend:-0.146 Is_holiday:-0.262 SeasonSpring:-0.282
+                SeasonSummer:-0.179 SeasonWinter:-0.764 Min_temp:0.025 Max_temp:0.009 Min_humidity:-0.010 Max_humidity:0.004 Wind_speed:-0.003 Rain_or_snow:-0.526 theta:6.393 eps:0.000527
+[1] -9315.304
+Maximizing -- use negfn and neggr
+Iter: 22 Qf: -9315.304 s2gamma: 0.054225 Intercept: 7.935  Hour_Chunks[8,16):0.802  Hour_chunks[16,24): 1.056  Is_weekend:-0.148 Is_holiday:-0.274 SeasonSpring:-0.278
+                SeasonSummer:-0.200 SeasonWinter:-0.773 Min_temp:0.023 Max_temp:0.011 Min_humidity:-0.009 Max_humidity:0.004 Wind_speed:-0.006 Rain_or_snow:-0.558 theta:6.495 eps:0.000634
+[1] -9310.405
+Maximizing -- use negfn and neggr
+Iter: 23 Qf: -9310.405 s2gamma: 0.053003 Intercept: 7.963  Hour_Chunks[8,16):0.800  Hour_chunks[16,24): 1.061  Is_weekend:-0.150 Is_holiday:-0.263 SeasonSpring:-0.285
+                SeasonSummer:-0.187 SeasonWinter:-0.774 Min_temp:0.023 Max_temp:0.011 Min_humidity:-0.009 Max_humidity:0.003 Wind_speed:-0.006 Rain_or_snow:-0.535 theta:6.361 eps:0.000526
+[1] -9306.478
+Maximizing -- use negfn and neggr
+Iter: 24 Qf: -9306.478 s2gamma: 0.053048 Intercept: 7.977  Hour_Chunks[8,16):0.800  Hour_chunks[16,24): 1.057  Is_weekend:-0.152 Is_holiday:-0.264 SeasonSpring:-0.292
+                SeasonSummer:-0.187 SeasonWinter:-0.779 Min_temp:0.022 Max_temp:0.012 Min_humidity:-0.009 Max_humidity:0.003 Wind_speed:-0.008 Rain_or_snow:-0.541 theta:6.428 eps:0.000422
+[1] -9306.646
+Maximizing -- use negfn and neggr
+Iter: 25 Qf: -9306.646 s2gamma: 0.050998 Intercept: 7.983  Hour_Chunks[8,16):0.802  Hour_chunks[16,24): 1.061  Is_weekend:-0.152 Is_holiday:-0.269 SeasonSpring:-0.288
+                SeasonSummer:-0.163 SeasonWinter:-0.795 Min_temp:0.020 Max_temp:0.013 Min_humidity:-0.009 Max_humidity:0.003 Wind_speed:-0.012 Rain_or_snow:-0.551 theta:6.390 eps:0.000018
+There were 24 warnings (use warnings() to see them)
+
+> save(output, file = "output_M1000.RData")

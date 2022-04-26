@@ -19,7 +19,7 @@
 #' @import stats
 #'
 #' @export
-glmm_model_fit <- function(model_glmm, data, scale_seoul_mean = "no"){
+glmm_model_fit <- function(model_glmm, data, scale_to_seoul_mean = "no"){
 
   ## Keep only same days as in seoul set
   data = data[data$Date %in% seoul$Date,]

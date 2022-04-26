@@ -21,9 +21,10 @@ train_random_forest <- function(data) {
   checkBikeData(data)
 
   x = subset(data,
-             select = c("Date", "Hour_chunks", "Is_weekend", "Is_holiday",
-                        "Season", "Min_temp", "Max_temp", "Min_humidity",
-                        "Max_humidity", "Wind_speed", "Rain_or_snow"))
+             select = c("Hour_chunks", "Is_weekend", "Is_holiday", "Season",
+                        "Min_temp", "Max_temp", "Min_humidity", "Max_humidity",
+                        "Wind_speed", "Rain_or_snow", "Date"))
+
   y = data$Bike_count
 
   trCtl <- trainControl(method="cv", number=5, savePredictions=TRUE)
@@ -59,12 +60,11 @@ plot_rf_importance <- function(data, mtry = 6) {
 
   checkBikeData(data)
 
-  model <- randomForest(Bike_count ~ Hour_chunks + Min_temp + Max_temp +
-                          Min_humidity + Max_humidity + Wind_speed +
-                          Rain_or_snow + Is_weekend + Season + Is_holiday +
-                          Date,
-                         data = data, importance = TRUE, ntree = 500,
-                        mtry = mtry)
+  model <- randomForest(Bike_count ~ Hour_chunks + Is_weekend + Is_holiday +
+                          Season + Min_temp + Max_temp + Min_humidity +
+                          Max_humidity + Wind_speed + Rain_or_snow + Date,
+                         data = data, importance = TRUE, ntree = 500, mtry = mtry)
+
 
   importance_matrix <- model$importance %>% as.data.frame(check.names = F)
   setorder(importance_matrix, -`%IncMSE`)

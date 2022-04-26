@@ -566,7 +566,7 @@ model_fit_rf <- function(model, data, scale_seoul_mean = "no"){
   return(model_fit)
 }
 
-model_fit_rf(rf.fit, seoul_data, scale_seoul_mean = "no") 
+model_fit_rf(rf.fit, seoul, scale_seoul_mean = "no") 
 model_fit_rf(rf.fit, london_data, scale_seoul_mean = "yes") 
 model_fit_rf(rf.fit, dc_data, scale_seoul_mean = "yes") 
 
