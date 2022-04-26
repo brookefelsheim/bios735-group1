@@ -21,7 +21,9 @@
 rf_model_fit <- function(model, data, scale_to_seoul_mean = "no") {
 
   x = subset(data,
-             select = c("Hour_chunks", "Max_temp", "Rain_or_snow", "Date"))
+             select = c("Hour_chunks", "Is_weekend", "Is_holiday", 
+                        "Season", "Min_temp", "Max_temp", "Min_humidity", "Max_humidity",
+                        "Wind_speed", "Rain_or_snow", "Date"))
   ## Predict Values
   pred = predict(model, x)
 
