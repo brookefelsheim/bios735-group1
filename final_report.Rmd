@@ -24,6 +24,12 @@ str(london)
 str(dc)
 ```
 
+
+
+```{r}
+
+```
+
 # Methods
 
 ## Negative Binomial Generalized Linear Mixed Model
