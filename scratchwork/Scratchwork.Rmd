@@ -502,7 +502,7 @@ ggplot(dc, aes(x = Hour, y = Bike_count)) + geom_point(shape = 21)
 
 
 
-## Compare Fit of Models
+## Compare Fit of Models  - Random Forest
 ```{r}
 
 
@@ -536,7 +536,7 @@ cor(dc_data$Bike_count, y.pred_dc*scale_dc, use = "pairwise.complete.obs")^2 ## 
 
 
 ## Function to Assess Model Fit
-model_fit <- function(model, data, scale_seoul_mean = "no"){
+model_fit_rf <- function(model, data, scale_seoul_mean = "no"){
   
   ## Predict Values
   pred = predict(model, subset(data, select = -c(Bike_count)))
@@ -566,9 +566,89 @@ model_fit <- function(model, data, scale_seoul_mean = "no"){
   return(model_fit)
 }
 
-model_fit(rf.fit, seoul_data, scale_seoul_mean = "no") 
-model_fit(rf.fit, london_data, scale_seoul_mean = "yes") 
-model_fit(rf.fit, dc_data, scale_seoul_mean = "yes") 
+model_fit_rf(rf.fit, seoul_data, scale_seoul_mean = "no") 
+model_fit_rf(rf.fit, london_data, scale_seoul_mean = "yes") 
+model_fit_rf(rf.fit, dc_data, scale_seoul_mean = "yes") 
 
 
 ```
+
+
+## Compare Fit of Models  - GLMM
+```{r}
+load("test_full_model_10^-5_theta.Rdata")
+model_glmm = model_test
+
+glmm_model_fit <- function(model, data, scale_seoul_mean = "no"){
+  
+  ## Keep only same days as in seoul set
+  data = data[data$Date %in% seoul$Date,]
+  
+  ## Name day ranef from seoul
+  names(model_glmm$day_ranef) = unique(seoul$Date)
+  
+  ## Predict log Mean for each day Values
+  model_matrix = model.matrix( Bike_count ~ Hour_chunks + Is_weekend + Is_holiday + Season + Min_temp + 
+                      Max_temp + Min_humidity + Max_humidity + Wind_speed + Rain_or_snow, data = data)
+  fixedef = c(model_matrix %*% model_glmm$beta)
+  ranef = model_glmm$day_ranef[match(data$Date,names(model_glmm$day_ranef))]
+  logmeans = fixedef + ranef
+  
+  ## Transform to get prediction
+  pred = exp(logmeans)
+  
+  
+  ## Scale to seoul bike count mean
+  if(scale_seoul_mean == "yes"){
+    ## Scaling Factor
+     scale = mean(data$Bike_count)/
+       mean(seoul$Bike_count)
+    pred = pred * scale
+  }
+  
+  ## Obtained RMSE
+  RMSE = sqrt(mean((data$Bike_count - pred)^2))
+  
+  ## Obtain MAE
+  MAE = mean(abs(data$Bike_count - pred)) 
+  
+  ## Obtain R^2
+  R2 = cor(data$Bike_count, pred, use = "pairwise.complete.obs")^2 ## R squared
+  
+  
+  ## Combine into data frame
+  model_fit = data.frame(RMSE = RMSE, MAE = MAE, R2 = R2)
+  
+  return(model_fit)
+}
+
+glmm_model_fit(model_glmm, seoul, scale_seoul_mean = "no") 
+glmm_model_fit(model_glmm, london, scale_seoul_mean = "yes") 
+glmm_model_fit(model_glmm, dc, scale_seoul_mean = "yes") 
+
+
+```
+
+```{r}
+#z = read.csv("ranef.csv", header = FALSE)
+#z[1,1] = -0.07438886
+#z = as.matrix(z)
+#z = t(z)
+#z = as.numeric(z)
+#ranef = c(z)
+#ranef = na.omit(ranef)
+
+model_test = list(beta = c(7.519358384,  0.781888853,  1.038303216, -0.155615197, -0.265902287,
+ -0.319954953, -0.198034786, -0.729883357, -0.014590067,  0.048136056,
+ -0.005027722,  0.002630110,  0.015952248, -0.520325989),
+ s2gamma = c(0.08611956),
+ theta = 5.642231,
+ eps = 7.737731e-06,
+ qfunction = -9464.336,
+ day_ranef = ranef,
+ iter = 41
+ )
+save(model_test, file = "test_full_model_10^-5_theta.Rdata")
+
+```
+

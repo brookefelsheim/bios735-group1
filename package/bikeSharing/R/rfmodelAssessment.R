@@ -3,15 +3,17 @@
 #' This function assesses the fit of a trained random forest
 #' model on a given dataset
 #'
+#'
+#' @param model trained random forest mmodel for assessment
 #' @param data pre-processed bike sharing data frame
-#'             with columns Bike_count, Hour_chunks,
-#'             Max_temp, Rain_or_snow, and Date
+#'             with columns  Hour_chunks, Is_weekend, Is_holiday, 
+#'             Season, Min_temp, Max_temp, Min_humidity, Max_humidity,
+#'             Wind_speed, Rain_or_snow, Date
 #' @param scale_to_seoul_mean "yes" or "no". If "yes",
 #'             scales the bike count mean of the input
 #'             data to the Seoul data bike count mean
 #'
-#' @return an object of class train containing the
-#'         fit random forest model
+#' @return a data frame summarizing the RMSE, MAE, and R2 value of the fitted rf model to the data
 #'
 #' @import caret
 #'
