@@ -3,27 +3,29 @@
 #' This function assesses the fit of a trained random forest
 #' model on a given dataset
 #'
-#'
-#' @param model trained random forest mmodel for assessment
+#' @param model trained random forest model for assessment
 #' @param data pre-processed bike sharing data frame
-#'             with columns  Hour_chunks, Is_weekend, Is_holiday, 
+#'             with columns Hour_chunks, Is_weekend, Is_holiday,
 #'             Season, Min_temp, Max_temp, Min_humidity, Max_humidity,
-#'             Wind_speed, Rain_or_snow, Date
+#'             Wind_speed, Rain_or_snow, Date, Bike_count
 #' @param scale_to_seoul_mean "yes" or "no". If "yes",
 #'             scales the bike count mean of the input
 #'             data to the Seoul data bike count mean
 #'
-#' @return a data frame summarizing the RMSE, MAE, and R2 value of the fitted rf model to the data
+#' @return a data frame summarizing the RMSE, MAE, and R2 value of the fitted
+#'         rf model to the data
 #'
 #' @import caret
+#' @import stats
 #'
 #' @export
 rf_model_fit <- function(model, data, scale_to_seoul_mean = "no") {
 
   x = subset(data,
-             select = c("Hour_chunks", "Is_weekend", "Is_holiday", 
-                        "Season", "Min_temp", "Max_temp", "Min_humidity", "Max_humidity",
-                        "Wind_speed", "Rain_or_snow", "Date"))
+  select = c("Hour_chunks", "Is_weekend", "Is_holiday", "Season", "Min_temp",
+             "Max_temp", "Min_humidity", "Max_humidity", "Wind_speed",
+             "Rain_or_snow", "Date"))
+
   ## Predict Values
   pred = predict(model, x)
 

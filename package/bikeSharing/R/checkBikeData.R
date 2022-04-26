@@ -6,8 +6,10 @@
 #' is incorrect.
 #'
 #' @param data pre-processed bike sharing data frame
-#'             with columns Bike_count, Hour_chunks,
-#'             Max_temp, Rain_or_snow, and Date
+#'             with columns Hour_chunks, Is_weekend,
+#'             Is_holiday, Season, Min_temp, Max_temp,
+#'             Min_humidity, Max_humidity, Wind_speed,
+#'             Rain_or_snow, Date, Bike_count
 #'
 checkBikeData <- function(data) {
 
@@ -15,7 +17,9 @@ checkBikeData <- function(data) {
     stop("Input data is not a data frame")
   }
   if (!all(
-    c("Bike_count", "Hour_chunks", "Max_temp", "Rain_or_snow", "Date") %in%
+    c("Bike_count", "Hour_chunks", "Rain_or_snow", "Date",
+      "Is_weekend", "Is_holiday", "Season", "Min_temp", "Max_temp",
+      "Min_humidity", "Max_humidity", "Wind_speed") %in%
            colnames(seoul))) {
     stop("Input data does not contain all necessary columns:
          Bike_count, Hour_chunks, Max_temp, Rain_or_snow, and Date")
@@ -32,11 +36,43 @@ checkBikeData <- function(data) {
   if (!is.numeric(data$Max_temp)) {
     stop("Max_temp column must be numeric")
   }
+  if (!is.numeric(data$Min_temp)) {
+    stop("Min_temp column must be numeric")
+  }
+  if (!is.numeric(data$Max_humidity)) {
+    stop("Max_humidity column must be numeric")
+  }
+  if (!is.numeric(data$Min_humidity)) {
+    stop("Min_humidity column must be numeric")
+  }
+  if (!is.numeric(data$Wind_speed)) {
+    stop("Wind_speed column must be numeric")
+  }
   if (!is.numeric(data$Rain_or_snow)) {
     stop("Rain_or_snow column must be numeric")
   }
   if(!all(unique(data$Rain_or_snow) %in% c(0, 1))) {
     stop("Rain_or_snow column must contain only values of 0 and 1")
+  }
+  if (!is.numeric(data$Is_weekend)) {
+    stop("Is_weekend column must be numeric")
+  }
+  if(!all(unique(data$Is_weekend) %in% c(0, 1))) {
+    stop("Is_weekend column must contain only values of 0 and 1")
+  }
+  if (!is.numeric(data$Is_holiday)) {
+    stop("Is_holiday column must be numeric")
+  }
+  if(!all(unique(data$Is_holiday) %in% c(0, 1))) {
+    stop("Is_holiday column must contain only values of 0 and 1")
+  }
+  if(!is.character(data$Season)) {
+    stop("Season column must be of class character")
+  }
+  if(!all(unique(data$Season) %in%
+          c("Winter", "Spring", "Summer", "Autumn"))) {
+    stop("Season column must contain only values of
+         'Winter', 'Spring', 'Summer', and 'Autumn'")
   }
   if(!is.character(data$Date)) {
     stop("Date column must be of class character (format should be mm-dd)")

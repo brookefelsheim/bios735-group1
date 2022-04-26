@@ -8,8 +8,10 @@ train_random_forest(data)
 }
 \arguments{
 \item{data}{pre-processed bike sharing data frame
-with columns Bike_count, Hour_chunks,
-Max_temp, Rain_or_snow, and Date}
+with columns Hour_chunks, Is_weekend,
+Is_holiday, Season, Min_temp, Max_temp,
+Min_humidity, Max_humidity, Wind_speed,
+Rain_or_snow, Date, Bike_count}
 }
 \value{
 an object of class train containing the

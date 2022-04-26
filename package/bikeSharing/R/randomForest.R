@@ -5,13 +5,15 @@
 #' Rain_or_snow predictors.
 #'
 #' @param data pre-processed bike sharing data frame
-#'             with columns Bike_count, Hour_chunks,
-#'             Max_temp, Rain_or_snow, and Date
+#'             with columns Hour_chunks, Is_weekend,
+#'             Is_holiday, Season, Min_temp, Max_temp,
+#'             Min_humidity, Max_humidity, Wind_speed,
+#'             Rain_or_snow, Date, Bike_count
 #'
 #' @return an object of class train containing the
 #'         fit random forest model
 #'
-#' @import caret
+#' @importFrom caret trainControl train
 #'
 #' @export
 train_random_forest <- function(data) {
@@ -19,10 +21,10 @@ train_random_forest <- function(data) {
   checkBikeData(data)
 
   x = subset(data,
-             select = c("Hour_chunks", "Is_weekend", "Is_holiday", 
-                        "Season", "Min_temp", "Max_temp", "Min_humidity", "Max_humidity",
+             select = c("Hour_chunks", "Is_weekend", "Is_holiday", "Season",
+                        "Min_temp", "Max_temp", "Min_humidity", "Max_humidity",
                         "Wind_speed", "Rain_or_snow", "Date"))
-  
+
   y = data$Bike_count
 
   trCtl <- trainControl(method="cv", number=5, savePredictions=TRUE)
@@ -47,19 +49,22 @@ train_random_forest <- function(data) {
 #' @return a ggplot object
 #'
 #' @import ggplot2
-#' @import magrittr
+#' @importFrom magrittr %>%
 #' @importFrom randomForest randomForest
 #' @importFrom data.table setorder
 #' @importFrom ggrepel geom_label_repel
+#' @importFrom egg theme_article
 #'
 #' @export
-plot_rf_importance <- function(data, mtry = 4) {
+plot_rf_importance <- function(data, mtry = 6) {
 
   checkBikeData(data)
 
-  model <- randomForest(Bike_count ~ Hour_chunks + Is_weekend + Is_holiday + Season + Min_temp + 
-                          Max_temp + Min_humidity + Max_humidity + Wind_speed + Rain_or_snow,
+  model <- randomForest(Bike_count ~ Hour_chunks + Is_weekend + Is_holiday +
+                          Season + Min_temp + Max_temp + Min_humidity +
+                          Max_humidity + Wind_speed + Rain_or_snow + Date,
                          data = data, importance = TRUE, ntree = 500, mtry = mtry)
+
 
   importance_matrix <- model$importance %>% as.data.frame(check.names = F)
   setorder(importance_matrix, -`%IncMSE`)
@@ -67,7 +72,8 @@ plot_rf_importance <- function(data, mtry = 4) {
   g <- ggplot(importance_matrix,aes(x =`%IncMSE`, y = IncNodePurity)) +
     geom_point(color = "grey30", alpha = 0.7) +
     theme_article() +
-    ggrepel::geom_label_repel(label = c(rownames(importance_matrix)),
+    ggrepel::geom_label_repel(label = c(rownames(importance_matrix)[1:5],
+                                        rep("", nrow(importance_matrix) - 5)),
                               nudge_x = 0.5, min.segment.length = 0) +
     xlab("Increase in MSE") +
     ylab("Increase in node purity")

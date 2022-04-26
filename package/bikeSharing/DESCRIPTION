@@ -40,7 +40,10 @@ Imports:
     ggplot2,
     data.table,
     ggrepel,
-    caret
+    caret,
+    stats,
+    egg,
+    optimx
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

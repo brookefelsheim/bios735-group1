@@ -32,9 +32,9 @@ For the analysis, we train the following two types of models:
 
 ### Predictor variables
 
-The variables that are used to predict bike rental count in both models are the following:     
+The variables that are used to predict bike rental count are the following:     
 
-  * Hour chunks (00:00 - 8:00, 8:00-16:00, 16:00-24:00)
+  * Hour chunk (00:00 - 8:00, 8:00-16:00, 16:00-24:00)
   * Weekend status (Yes/No)
   * Holiday status (Yes/No)
   * Season (Winter, Spring, Summer, Autumn)
@@ -44,3 +44,6 @@ The variables that are used to predict bike rental count in both models are the 
   * Maximum daily humidity (%)
   * Wind speed (m/s)
   * Presence of any rain or snow (Yes/No)
+  * Date (mm-dd)
+
+To allow the negative binomial glmm to run faster, we only use the following variables: hour chunk, maximum daily temperature, presense of rain or snow, and date (random effect). In the random forest model, all 11 predictor variables are used.
