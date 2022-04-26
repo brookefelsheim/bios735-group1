@@ -24,7 +24,7 @@ checkBikeData <- function(data) {
     stop("Input data does not contain all necessary columns:
          Bike_count, Hour_chunks, Max_temp, Rain_or_snow, and Date")
   }
-  if (!is.factor(data$Bike_count)) {
+  if (!is.numeric(data$Bike_count)) {
     stop("Bike_count column must be numeric")
   }
   if(length(levels(seoul$Hour_chunks)) != 3) {
