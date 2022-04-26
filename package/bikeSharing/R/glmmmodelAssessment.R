@@ -16,7 +16,7 @@
 #' @return a data frame summarizing the RMSE, MAE, and R2 value of the fitted
 #'         glmm model to the data
 #'
-#' @import stats
+#' @importFrom stats model.matrix cor
 #'
 #' @export
 glmm_model_fit <- function(model_glmm, data, scale_to_seoul_mean = "no"){
