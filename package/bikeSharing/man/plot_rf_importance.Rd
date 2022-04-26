@@ -4,7 +4,7 @@
 \alias{plot_rf_importance}
 \title{Plot random forest variable importance}
 \usage{
-plot_rf_importance(data, mtry = 4)
+plot_rf_importance(data, mtry = 6)
 }
 \arguments{
 \item{data}{pre-processed bike sharing data frame
