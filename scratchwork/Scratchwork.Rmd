@@ -306,7 +306,7 @@ ctree0=ctree(Bike_count ~ Hour_chunks + Min_T + Max_T + Min_H + Max_H + Wind_spe
              data = seoul_data_factor)
 
 ctree_mda=varimp(ctree0)
-sort(ctree_mda)
+ctree_mda=sort(ctree_mda,decreasing = T)
 
 # random forest
 trCtl <- trainControl(method="cv", number=5, savePredictions=TRUE)
@@ -318,7 +318,8 @@ model1 <- randomForest(Bike_count ~ Hour_chunks + Min_T + Max_T + Min_H + Max_H 
                          Rain_or_snow + Is_weekend + Season + Is_holiday + Date, 
                        data = seoul_data, importance=TRUE, ntree=500, mtry = 6, do.trace=100)
 
-reprtree:::plot.getTree(model1,k=2,depth=4,cex=1,font=1)
+reprtree:::plot.getTree(model1,k=10,depth=4,cex=1,font=2)
+reprtree:::plot.getTree(model1,k=150,depth=4,cex=1,font=2)
 importance_matrix=model1$importance %>% as.data.frame(check.names=F)
 setorder(importance_matrix,-`%IncMSE`)
 ggplot(importance_matrix,aes(x=`%IncMSE`,y=IncNodePurity))+geom_point(color="grey30",alpha=0.7)+
@@ -337,7 +338,7 @@ cor(y, y.pred_rf, use = "pairwise.complete.obs")^2
 # compare important variables with lmer
 chunk_8hr = 
 glmer.nb(Bike_count ~ Hour_chunks + Min_T + Max_T + Min_H + Max_H + Wind_speed +
-         Rain_or_snow + Is_weekend + Season + Is_holiday + (1|Date), data = seoul_hourly_chunks_8hr, REML = T)
+         Rain_or_snow + Is_weekend + Season + Is_holiday + (1|Date), data = seoul_hourly_chunks_8hr)
 
 lmer_aic=drop1(chunk_8hr,ddf = "lme4",test="Chi")
 
