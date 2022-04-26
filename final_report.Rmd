@@ -1,0 +1,53 @@
+---
+title: "Final Report"
+author: "Group 1: Jiawen Chen, Brooke Felsheim, Elena Kharitonova, Jairui Tang, and Xinjie Qian"
+date: "4/29/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+```{r}
+library(usethis)
+library(devtools)
+load_all("package/bikeSharing/")
+set.seed(735)
+```
+
+```{r}
+str(seoul)
+str(london)
+str(dc)
+```
+
+# Methods
+
+## Negative Binomial Generalized Linear Mixed Model
+
+## Random Forest
+
+# Results 
+
+## Negative Binomial Generalized Linear Mixed Model
+
+## Random Forest
+```{r}
+set.seed(735)
+rf.fit <- train_random_forest(data = seoul)
+rf.fit
+plot_rf_importance(seoul)
+```
+
+```{r}
+rf_model_fit(rf.fit, seoul, scale_seoul_mean = "no") 
+rf_model_fit(rf.fit, london, scale_seoul_mean = "yes") 
+rf_model_fit(rf.fit, dc, scale_seoul_mean = "yes") 
+```
+
+
+
+# Discussion
