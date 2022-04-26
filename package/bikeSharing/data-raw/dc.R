@@ -3,7 +3,7 @@
 #' bike sharing data sets. It also makes the DC bike sharing data set
 #' available for use from within the package infrastructure.
 #'
-#' @source \url {https://www.kaggle.com/datasets/marklvl/bike-sharing-dataset?select=hour.csv}
+#' @source \url {https://www.kaggle.com/datasets/marklvl/bike-sharing-dataset}
 
 library(dplyr)
 
@@ -22,6 +22,10 @@ dc <- dc %>%
 # Add day of the year column
 dc <- dc %>%
   mutate(Day = as.numeric(strftime(Date, format = "%j")))
+
+# Add year column
+dc <- dc %>%
+  mutate(Year = ifelse(Date > "2011-12-31", "Year 2", "Year 1"))
 
 # Create rain or snow column
 dc <- dc %>%
@@ -80,7 +84,7 @@ dc <- dc %>% mutate(Date = format(Date, format="%m-%d"))
 dc$Hour_chunks <- cut(dc$Hour, c(0,8,16,24), right = FALSE)
 dc <- dc %>%
   group_by(Date, Hour_chunks, Day, Is_weekend, Is_holiday, Season,
-           Min_temp, Max_temp, Min_humidity, Max_humidity) %>%
+           Min_temp, Max_temp, Min_humidity, Max_humidity, Year) %>%
   summarise(
     Wind_speed = mean(Wind_speed),
     Rain_or_snow = if( sum(Rain_or_snow > 0) > 0 ) {1} else {0},
