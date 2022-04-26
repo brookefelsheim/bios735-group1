@@ -8,9 +8,9 @@
 #'             with columns Hour_chunks, Is_weekend, Is_holiday,
 #'             Season, Min_temp, Max_temp, Min_humidity, Max_humidity,
 #'             Wind_speed, Rain_or_snow, Date, Bike_count
-#' @param scale_to_seoul_mean "yes" or "no". If "yes",
+#' @param scale_to_london_mean "yes" or "no". If "yes",
 #'             scales the bike count mean of the input
-#'             data to the Seoul data bike count mean
+#'             data to the London data bike count mean
 #'
 #' @return a data frame summarizing the RMSE, MAE, and R2 value of the fitted
 #'         rf model to the data
@@ -18,7 +18,7 @@
 #' @importFrom stats cor predict
 #'
 #' @export
-rf_model_fit <- function(model, data, scale_to_seoul_mean = "no") {
+rf_model_fit <- function(model, data, scale_to_london_mean = "no") {
 
   x = subset(data,
   select = c("Hour_chunks", "Is_weekend", "Is_holiday", "Season", "Min_temp",
@@ -28,11 +28,11 @@ rf_model_fit <- function(model, data, scale_to_seoul_mean = "no") {
   ## Predict Values
   pred = predict(model, x)
 
-  ## Scale to seoul bike count mean
-  if(scale_to_seoul_mean == "yes"){
+  ## Scale to London bike count mean
+  if(scale_to_london_mean == "yes"){
     ## Scaling Factor
     scale = mean(data$Bike_count)/
-      mean(seoul$Bike_count)
+      mean(london$Bike_count)
     pred = pred * scale
   }
 
