@@ -56,7 +56,7 @@ train_random_forest <- function(data) {
 #' @importFrom egg theme_article
 #'
 #' @export
-plot_rf_importance <- function(data, mtry = 6) {
+plot_rf_importance <- function(data, mtry = 11) {
 
   checkBikeData(data)
 
