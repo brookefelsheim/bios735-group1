@@ -1,7 +1,7 @@
 #' Pre-processed Seoul bike sharing data
 #'
-#' The Seoul bike sharing data with data that has been standardized and
-#' grouped in 8-hour time chunks. Pre-processing script can be found in
+#' Seoul bike sharing data that has been standardized and grouped
+#' in 8-hour time chunks. Pre-processing script can be found in
 #' the raw_data/ directory.
 #'
 #' @format A data frame with 1059 rows and 13 variables:

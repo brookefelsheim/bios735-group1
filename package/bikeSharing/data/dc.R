@@ -1,6 +1,6 @@
 #' Pre-processed DC bike sharing data
 #'
-#' The DC bike sharing data with data that has been standardized and
+#' Washington, D.C. bike sharing data that has been standardized and
 #' grouped in 8-hour time chunks. Pre-processing script can be found in
 #' the raw_data/ directory.
 #'

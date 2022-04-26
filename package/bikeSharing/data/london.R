@@ -1,7 +1,7 @@
 #' Pre-processed London bike sharing data
 #'
-#' The London bike sharing data with data that has been standardized and
-#' grouped in 8-hour time chunks. Pre-processing script can be found in
+#' London bike sharing data that has been standardized and grouped
+#' in 8-hour time chunks. Pre-processing script can be found in
 #' the raw_data/ directory.
 #'
 #' @format A data frame with 2185 rows and 14 variables:
