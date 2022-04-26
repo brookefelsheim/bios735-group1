@@ -41,7 +41,7 @@ glmm_model_fit <- function(model_glmm, data, scale_seoul_mean = "no"){
 
 
   ## Scale to seoul bike count mean
-  if(scale_seoul_mean == "yes"){
+  if(scale_to_seoul_mean == "yes"){
     ## Scaling Factor
     scale = mean(data$Bike_count)/
       mean(seoul$Bike_count)

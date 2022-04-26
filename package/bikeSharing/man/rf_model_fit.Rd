@@ -4,7 +4,7 @@
 \alias{rf_model_fit}
 \title{Assess random forest model fit}
 \usage{
-rf_model_fit(model, data, scale_to_seoul_mean = "no")
+rf_model_fit(model, data, scale_seoul_mean = "no")
 }
 \arguments{
 \item{model}{trained random forest model for assessment}
@@ -14,7 +14,7 @@ with columns Hour_chunks, Is_weekend, Is_holiday,
 Season, Min_temp, Max_temp, Min_humidity, Max_humidity,
 Wind_speed, Rain_or_snow, Date, Bike_count}
 
-\item{scale_to_seoul_mean}{"yes" or "no". If "yes",
+\item{scale_seoul_mean}{"yes" or "no". If "yes",
 scales the bike count mean of the input
 data to the Seoul data bike count mean}
 }
