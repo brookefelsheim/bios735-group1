@@ -10,9 +10,9 @@ rf_model_fit(model, data, scale_to_seoul_mean = "no")
 \item{model}{trained random forest model for assessment}
 
 \item{data}{pre-processed bike sharing data frame
-with columns  Hour_chunks, Is_weekend, Is_holiday,
+with columns Hour_chunks, Is_weekend, Is_holiday,
 Season, Min_temp, Max_temp, Min_humidity, Max_humidity,
-Wind_speed, Rain_or_snow, Date}
+Wind_speed, Rain_or_snow, Date, Bike_count}
 
 \item{scale_to_seoul_mean}{"yes" or "no". If "yes",
 scales the bike count mean of the input
