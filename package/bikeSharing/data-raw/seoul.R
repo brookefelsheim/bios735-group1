@@ -80,6 +80,12 @@ seoul <- seoul %>%
     Bike_count = sum(Bike_count)
   )
 
+# Binary data as factors
+seoul <- seoul %>%
+  mutate(Is_weekend = factor(Is_weekend, levels = c("0", "1"))) %>%
+  mutate(Is_holiday = factor(Is_holiday, levels = c("0", "1"))) %>%
+  mutate(Rain_or_snow = factor(Rain_or_snow, levels = c("0", "1")))
+
 seoul <- data.frame(seoul)
 
 usethis::use_data(seoul, overwrite = TRUE)

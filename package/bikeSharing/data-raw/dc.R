@@ -72,9 +72,8 @@ dc <- dc %>%
          Is_holiday = holiday,
          Hour = hr)
 
-# Make the Date Only Include Month and Day, not Year
+# Make the date only include month and day, not year
 dc <- dc %>% mutate(Date = format(Date, format="%m-%d"))
-
 
 # Turn hourly data into 8-hour time chunks, keeping only the columns
 # that will be used in the predictive models. Hourly bike counts will
@@ -91,6 +90,12 @@ dc <- dc %>%
     Rain_or_snow = if( sum(Rain_or_snow > 0) > 0 ) {1} else {0},
     Bike_count = sum(Bike_count)
   )
+
+# Binary data as factors
+dc <- dc %>%
+  mutate(Is_weekend = factor(Is_weekend, levels = c("0", "1"))) %>%
+  mutate(Is_holiday = factor(Is_holiday, levels = c("0", "1"))) %>%
+  mutate(Rain_or_snow = factor(Rain_or_snow, levels = c("0", "1")))
 
 dc <- data.frame(dc)
 

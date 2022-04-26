@@ -84,4 +84,10 @@ london <- london %>%
 
 london <- data.frame(london)
 
+# Binary data as factors
+london <- london %>%
+  mutate(Is_weekend = factor(Is_weekend, levels = c("0", "1"))) %>%
+  mutate(Is_holiday = factor(Is_holiday, levels = c("0", "1"))) %>%
+  mutate(Rain_or_snow = factor(Rain_or_snow, levels = c("0", "1")))
+
 usethis::use_data(london, overwrite = TRUE)
