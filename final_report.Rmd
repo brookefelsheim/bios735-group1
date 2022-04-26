@@ -15,20 +15,20 @@ knitr::opts_chunk$set(echo = TRUE)
 library(usethis)
 library(devtools)
 load_all("package/bikeSharing/")
-set.seed(735)
+set.seed(1)
 ```
 
 ```{r}
-str(seoul)
 str(london)
 str(dc)
+str(seoul)
 ```
-
-
 
 ```{r}
-
+london_train <- london[london$Year == "Year 1",]
+london_test <- london[london$Year == "Year 2",]
 ```
+
 
 # Methods
 
@@ -39,19 +39,41 @@ str(dc)
 # Results 
 
 ## Negative Binomial Generalized Linear Mixed Model
+```{r eval=FALSE, include=TRUE}
+glmm_fit <- MCEM_algorithm( beta_initial = c(7.5, 0.5, 1.0, -0.25, -0.25, -0.25,
+                                          -0.25, -0.75, 0, 0, 0, 0, 0, -0.5),
+                         theta_initial = 4.5,
+                         s2gamma_initial = 0.2,
+                         M = 1000,
+                         burn.in = 200,
+                         tol = 10^-4,
+                         maxit = 100,
+                         data = london_train
+                         )
+```
+```{r}
+str(glmm_fit)
+```
+```{r}
+glmm_model_fit(glmm_fit, london_train, scale_to_london_mean = "no") 
+glmm_model_fit(glmm_fit, london_test, scale_to_london_mean = "no") 
+glmm_model_fit(glmm_fit, dc, scale_to_london_mean = "yes") 
+glmm_model_fit(glmm_fit, seoul, scale_to_london_mean = "yes") 
+```
+
 
 ## Random Forest
 ```{r}
-set.seed(735)
-rf.fit <- train_random_forest(data = seoul)
-rf.fit
-plot_rf_importance(seoul)
+rf_fit <- train_random_forest(data = london_train)
+rf_fit
+plot_rf_importance(london_train)
 ```
 
 ```{r}
-rf_model_fit(rf.fit, seoul, scale_seoul_mean = "no") 
-rf_model_fit(rf.fit, london, scale_seoul_mean = "yes") 
-rf_model_fit(rf.fit, dc, scale_seoul_mean = "yes") 
+rf_model_fit(rf_fit, london_train, scale_to_london_mean = "no")
+rf_model_fit(rf_fit, london_test, scale_to_london_mean = "no") 
+rf_model_fit(rf_fit, dc, scale_to_london_mean = "yes") 
+rf_model_fit(rf_fit, seoul, scale_to_london_mean = "yes") 
 ```
 
 
