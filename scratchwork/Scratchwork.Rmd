@@ -335,14 +335,6 @@ y.pred_ctree=predict(ctree0, subset(seoul_data_factor, select=-c(Bike_count)))
 cor(y, y.pred_ctree, use = "pairwise.complete.obs")^2
 cor(y, y.pred_rf, use = "pairwise.complete.obs")^2
 
-# compare important variables with lmer
-chunk_8hr = 
-glmer.nb(Bike_count ~ Hour_chunks + Min_T + Max_T + Min_H + Max_H + Wind_speed +
-         Rain_or_snow + Is_weekend + Season + Is_holiday + (1|Date), data = seoul_hourly_chunks_8hr)
-
-lmer_aic=drop1(chunk_8hr,ddf = "lme4",test="Chi")
-
-setorder(lmer_aic,-AIC)
 
 ```
 
