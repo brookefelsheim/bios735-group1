@@ -9,11 +9,12 @@ library(dplyr)
 
 dc <- read.csv("data-raw/DCBikeData.csv", check.names = F)
 
-# Convert season from numeric to character
+# Convert season from numeric to factor
 dc <- dc %>%
-  mutate(Season = ifelse(season == 1, "Spring",
+  mutate(Season = factor(ifelse(season == 1, "Spring",
                          ifelse(season == 2, "Summer",
-                                ifelse(season == 3, "Autumn", "Winter"))))
+                                ifelse(season == 3, "Autumn", "Winter"))),
+                         levels = c("Spring", "Summer", "Autumn", "Winter")))
 
 # Format date as a Date object
 dc <- dc %>%
