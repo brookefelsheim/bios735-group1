@@ -15,11 +15,8 @@
 #' @return a data frame summarizing the RMSE, MAE, and R2 value of the fitted glmm model to the data
 #'         
 #'
-#' @import 
-#'
 #' @export
-
-glmm_model_fit <- function(model_glmm, data, scale_seoul_mean = "no"){
+glmm_model_fit <- function(model_glmm, data, scale_to_seoul_mean = "no"){
   
   ## Keep only same days as in seoul set
   data = data[data$Date %in% seoul$Date,]
@@ -39,7 +36,7 @@ glmm_model_fit <- function(model_glmm, data, scale_seoul_mean = "no"){
   
   
   ## Scale to seoul bike count mean
-  if(scale_seoul_mean == "yes"){
+  if(scale_to_seoul_mean == "yes"){
     ## Scaling Factor
     scale = mean(data$Bike_count)/
       mean(seoul$Bike_count)

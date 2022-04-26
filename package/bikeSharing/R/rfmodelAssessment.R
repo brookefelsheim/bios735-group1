@@ -28,7 +28,7 @@ rf_model_fit <- function(model, data, scale_to_seoul_mean = "no") {
   pred = predict(model, x)
 
   ## Scale to seoul bike count mean
-  if(scale_seoul_mean == "yes"){
+  if(scale_to_seoul_mean == "yes"){
     ## Scaling Factor
     scale = mean(data$Bike_count)/
       mean(seoul$Bike_count)
@@ -49,3 +49,4 @@ rf_model_fit <- function(model, data, scale_to_seoul_mean = "no") {
 
   return(model_fit)
 }
+
