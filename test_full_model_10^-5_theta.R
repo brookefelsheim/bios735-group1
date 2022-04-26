@@ -22,7 +22,7 @@ summary(fit_model)
 
 
 r.walk = function(){
-  runif(1,-1/2,1/2)
+  runif(1,-1/4,1/4)
 }
 
 
@@ -48,15 +48,15 @@ sample.gamma.posterior.i = function(yi, xi, M, maxit, thetat, betat, s2gammat, t
     
     gammai[i+1] = g.sim(gammai[i])
     lambdai = exp(xi %*% betat + gammai[i+1])
-  #  p_i0 = (exp(-thetat)+1)/(exp(-thetat)+2)
-  #  r_i0 = lambdai0 * (exp(-thetat)+1)
-  #  p_i = (exp(-thetat)+1)/(exp(-thetat)+2)
-  #  r_i = lambdai * (exp(-thetat)+1)
+    #  p_i0 = (exp(-thetat)+1)/(exp(-thetat)+2)
+    #  r_i0 = lambdai0 * (exp(-thetat)+1)
+    #  p_i = (exp(-thetat)+1)/(exp(-thetat)+2)
+    #  r_i = lambdai * (exp(-thetat)+1)
     
     L1 = prod(dnbinom(yi,size = thetat, mu = lambdai))*dnorm(gammai[i+1],
-                                                        mean = 0,sd=sqrt(s2gammat))
+                                                             mean = 0,sd=sqrt(s2gammat))
     L2= prod(dnbinom(yi,size=thetat,mu= lambdai0))*dnorm(gammai[i],
-                                                    mean = 0,sd=sqrt(s2gammat))
+                                                         mean = 0,sd=sqrt(s2gammat))
     
     if (L1>0) {
       r = L1 / L2
@@ -305,7 +305,9 @@ MCEM_algorithm = function(
     iter = iter + 1
     if(iter == maxit) warning("Iteration limit reached without convergence")
     
-    cat(sprintf("Iter: %d Qf: %.3f s2gamma: %f Intercept: %.3f  Hour_Chunks[8,16):%.3f  Hour_chunks[16,24): %.3f  Max_temp:%.3f   Rain_or_snow:%.3f theta:%.3f eps:%f\n",iter, qfunction,s2gamma, beta[1],beta[2],beta[3],beta[4],beta[5], theta, eps)
+    cat(sprintf("Iter: %d Qf: %.3f s2gamma: %f Intercept: %.3f  Hour_Chunks[8,16):%.3f  Hour_chunks[16,24): %.3f  Is_weekend:%.3f Is_holiday:%.3f SeasonSpring:%.3f
+                SeasonSummer:%.3f SeasonWinter:%.3f Min_temp:%.3f Max_temp:%.3f Min_humidity:%.3f Max_humidity:%.3f Wind_speed:%.3f Rain_or_snow:%.3f theta:%.3f eps:%f\n",iter, qfunction,s2gamma, beta[1],beta[2],beta[3],beta[4],beta[5],beta[6],
+                beta[7],beta[8],beta[9], beta[10], beta[11], beta[12], beta[13], beta[14], theta, eps)
     )
     
     
@@ -326,17 +328,16 @@ MCEM_algorithm = function(
 }
 
 
+set.seed(1)
+
 ## Dummy Example to Make sure algorithm runs
-MCEM_algorithm( beta_initial = c(7.49, 0.8, 1.06, -0.15, -0.23, -0.3, -0.18, -0.72, -0.01, 0.05, 0, 0, 0.01, -0.48),
-                theta_initial = 4.542,
-                s2gamma_initial = 0.2,
-                M = 1000,
-                burn.in = 1,
-                tol = 10^-5,
-                maxit = 100,
-                data = seoul
+output = MCEM_algorithm( beta_initial = c(7.5, 0.5, 1.0, -0.25, -0.25, -0.25, -0.25, -0.75, 0, 0, 0, 0, 0, -0.5),
+                         theta_initial = 4.5,
+                         s2gamma_initial = 0.2,
+                         M = 1000,
+                         burn.in = 200,
+                         tol = 10^-4,
+                         maxit = 100,
+                         data = seoul
 )
-
-
-
 
