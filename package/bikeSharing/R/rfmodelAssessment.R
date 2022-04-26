@@ -15,8 +15,7 @@
 #' @return a data frame summarizing the RMSE, MAE, and R2 value of the fitted
 #'         rf model to the data
 #'
-#' @import caret
-#' @import stats
+#' @importFrom stats cor predict
 #'
 #' @export
 rf_model_fit <- function(model, data, scale_to_seoul_mean = "no") {

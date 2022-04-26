@@ -25,15 +25,17 @@
 #'
 #' @import data.table
 #' @importFrom optimx optimx
+#' @importFrom stats model.matrix
 #'
 #' @export
 MCEM_algorithm = function(
-  beta_initial = c(7.01, 0.8, 1.07, 0.047, -0.58),
+  beta_initial = c(7.49, 0.8, 1.06, -0.15, -0.23, -0.3, -0.18, -0.72,
+                   -0.01, 0.05, 0, 0, 0.01, -0.48),
   theta_initial = 4.542,
   s2gamma_initial = 0.2,
   M = 1000,
   burn.in = 200,
-  tol = 10^-3,
+  tol = 10^-5,
   maxit = 100,
   data = seoul,
   trace  = 0
@@ -45,6 +47,7 @@ MCEM_algorithm = function(
   eps = 10000
   qfunction = -1000000 # using Qfunction for convergence
 
+
   beta = beta_initial
   theta = theta_initial
   s2gamma = s2gamma_initial
@@ -55,17 +58,19 @@ MCEM_algorithm = function(
   # burn in
   burn.in = burn.in
 
-  data = data.table(data)
+  seoul = data.table(data)
 
-  n = length(unique(data$Date))
+  n = length(unique(seoul$Date))
+
 
   while(eps > tol & iter < maxit){
 
     qfunction0 = qfunction
 
     ## Begin E-step
+
     samples = sample.gamma.posterior.all(
-      data = data,
+      data = seoul,
       M = M,
       maxit = maxit * M,
       thetat = theta,
@@ -74,7 +79,7 @@ MCEM_algorithm = function(
       trace = trace
     )
 
-    qfunction = Q(data = data,
+    qfunction = Q(data = seoul,
                   thetat = theta,
                   betat = beta,
                   s2gammat = s2gamma,
@@ -91,7 +96,7 @@ MCEM_algorithm = function(
       par = c(beta, theta, log(s2gamma)),
       # Q function wrapper
       fn = function(x, data, samples){
-        Q(data = data,
+        Q(data = seoul,
           betat = x[1:length(beta)],
           thetat = x[length(beta)+1],
           s2gammat = x[length(beta)+2],
@@ -120,10 +125,13 @@ MCEM_algorithm = function(
     if(iter == maxit) warning("Iteration limit reached without convergence")
 
     cat(sprintf("Iter: %d Qf: %.3f s2gamma: %f Intercept: %.3f
-                Hour_Chunks[8,16):%.3f Hour_chunks[16,24): %.3f
-                Max_temp:%.3f Rain_or_snow:%.3f theta:%.3f eps:%f\n",
-                iter, qfunction, s2gamma, beta[1], beta[2], beta[3], beta[4],
-                beta[5], theta, eps)
+    Hour_Chunks[8,16):%.3f Hour_chunks[16,24): %.3f Is_weekend:%.3f
+    Is_holiday:%.3f SeasonSpring:%.3f SeasonSummer:%.3f SeasonWinter:%.3f
+    Min_temp:%.3f Max_temp:%.3f Min_humidity:%.3f Max_humidity:%.3f
+    Wind_speed:%.3f Rain_or_snow:%.3f theta:%.3f eps:%f\n",
+                iter, qfunction,s2gamma, beta[1], beta[2], beta[3], beta[4],
+                beta[5],beta[6], beta[7],beta[8], beta[9], beta[10], beta[11],
+                beta[12], beta[13], beta[14], theta, eps)
     )
   }
 
@@ -138,11 +146,12 @@ MCEM_algorithm = function(
   )
 
   return(results)
+
 }
 
 #' Helper function to perform random walk
 r.walk = function(){
-  runif(1,-1/2,1/2)
+  runif(1,-1/4,1/4)
 }
 
 #' Helper function that adds prior u to random walk
@@ -164,17 +173,13 @@ sample.gamma.posterior.i = function(yi, xi, M, maxit, thetat, betat, s2gammat,
 
     gammai[i+1] = g.sim(gammai[i])
     lambdai = exp(xi %*% betat + gammai[i+1])
-    p_i0 = (exp(-thetat)+1)/(exp(-thetat)+2)
-    r_i0 = lambdai0 * (exp(-thetat)+1)
-    p_i = (exp(-thetat)+1)/(exp(-thetat)+2)
-    r_i = lambdai * (exp(-thetat)+1)
 
-    L1 = prod(dnbinom(yi,size = r_i, prob = p_i))*dnorm(gammai[i+1],
-                                                        mean = 0,
-                                                        sd=sqrt(s2gammat))
-    L2= prod(dnbinom(yi,size=r_i0,prob=p_i0))*dnorm(gammai[i],
-                                                    mean = 0,
-                                                    sd=sqrt(s2gammat))
+    L1 = prod(dnbinom(yi,size = thetat, mu = lambdai))*dnorm(gammai[i+1],
+                                                             mean = 0,
+                                                             sd=sqrt(s2gammat))
+    L2= prod(dnbinom(yi,size=thetat,mu= lambdai0))*dnorm(gammai[i],
+                                                         mean = 0,
+                                                         sd=sqrt(s2gammat))
 
     if (L1>0) {
       r = L1 / L2
@@ -187,9 +192,9 @@ sample.gamma.posterior.i = function(yi, xi, M, maxit, thetat, betat, s2gammat,
     } else {
       gammai[i+1]=gammai[i]
     }
-    if (trace > 0) {
+
+    if (trace > 0)
       print(gammai[i+1])
-    }
   }
 
   return(list(gammai = gammai))
@@ -208,7 +213,9 @@ sample.gamma.posterior.all = function(data,
   n=length(unique_date)
   samples = matrix(NA,nrow = n, ncol = M)
 
-  X = model.matrix( Bike_count ~ Hour_chunks + Max_temp  + Rain_or_snow, data = data)
+  X = model.matrix( Bike_count ~ Hour_chunks + Is_weekend + Is_holiday +
+                      Season + Min_temp + Max_temp + Min_humidity +
+                      Max_humidity + Wind_speed + Rain_or_snow, data = data)
 
   ## looping over n subjects
   for (i in 1:n) {
@@ -230,10 +237,9 @@ sample.gamma.posterior.all = function(data,
 
     # save to matrix
     samples[i,] = samples.i
-
   }
 
-  if(trace > 0) { print("completed sampling") }
+  if(trace > 0) print("completed sampling")
 
   ## return matrix
   return(samples)
@@ -263,11 +269,7 @@ Qi = function(yi,
   # calculate Q
   ymat = matrix(yi, nrow = length(yi), ncol = M)
 
-  p_i = (exp(-thetat)+1)/(exp(-thetat)+2)
-  r_i = lambdai * (exp(-thetat)+1)
-
-
-  qi = sum(dnbinom(yi,size= r_i, prob=p_i,log = T)[,-c(1:burn_in)]) +
+  qi = sum(dnbinom(yi,size= thetat, mu=lambdai,log = T)[,-c(1:burn_in)]) +
     sum(dnorm(gammai, mean = 0,sd = sqrt(s2gammat),log = T)[-c(1:burn_in)])
 
   # divide sum by M
@@ -278,6 +280,8 @@ Qi = function(yi,
 }
 
 #' Helper function for calculating the Q-function
+#'
+#' @importFrom stats model.matrix
 Q = function(data,
              thetat,
              betat,
@@ -297,10 +301,12 @@ Q = function(data,
   Q = 0
 
   ## Obtain Model.Matrix
-  X = model.matrix( Bike_count ~ Hour_chunks + Max_temp  + Rain_or_snow, data = data)
+  X = model.matrix( Bike_count ~ Hour_chunks + Is_weekend + Is_holiday +
+                      Season + Min_temp + Max_temp + Min_humidity +
+                      Max_humidity + Wind_speed + Rain_or_snow, data = data)
 
   # loop over subjects
-  for (i in 1:353) {
+  for (i in 1:length(unique_date)) {
     Q = Q + Qi(yi = data[data$Date == unique_date[i], Bike_count],
                xi =  X[data$Date == unique_date[i],],
                thetat = thetat,
@@ -310,5 +316,6 @@ Q = function(data,
                burn_in = burn_in)
   }
 
+  # return
   return(Q)
 }

@@ -18,6 +18,11 @@ seoul <- seoul %>%
   mutate(Rain_or_snow = ifelse(`Rainfall(mm)` > 0 |
                                  `Snowfall (cm)` > 0, 1, 0))
 
+# Convert season from character to factor
+seoul <- seoul %>%
+  mutate(Season = factor(Seasons,
+                         levels = c("Spring", "Summer", "Autumn", "Winter")))
+
 # Convert the date into an R date object
 seoul <- seoul %>%
   mutate(Date = as.Date(Date, format = "%d/%m/%Y"))
@@ -53,7 +58,6 @@ seoul <- seoul %>%
   rename(Bike_count = `Rented Bike Count`,
          Wind_speed = `Wind speed (m/s)`,
          Is_weekend = Weekend,
-         Season = Seasons,
          Is_holiday = Holiday)
 
 # Make the Date Only Include Month and Day, not Year

@@ -335,18 +335,86 @@ y.pred_ctree=predict(ctree0, subset(seoul_data_factor, select=-c(Bike_count)))
 cor(y, y.pred_ctree, use = "pairwise.complete.obs")^2
 cor(y, y.pred_rf, use = "pairwise.complete.obs")^2
 
-# compare important variables with lmer
-chunk_8hr = 
-glmer.nb(Bike_count ~ Hour_chunks + Min_T + Max_T + Min_H + Max_H + Wind_speed +
-         Rain_or_snow + Is_weekend + Season + Is_holiday + (1|Date), data = seoul_hourly_chunks_8hr)
-
-lmer_aic=drop1(chunk_8hr,ddf = "lme4",test="Chi")
-
-setorder(lmer_aic,-AIC)
-
 ```
 
+```{r}
+# london
 
+load("package/bikeSharing/data/london.rda")
+
+train = london[london$Year == "Year 1",]
+test = london[london$Year == "Year 2",]
+
+
+# conditional inference tree
+train_factor = train %>%
+  mutate(Date=as.numeric(as.factor(Date)),
+         Hour_chunks=as.factor(Hour_chunks),
+         Is_weekend=as.factor(Is_weekend),
+         Season=as.factor(Season),
+         Is_holiday=as.factor(Is_holiday),
+         Rain_or_snow=as.factor(Rain_or_snow))
+  
+test_factor = test %>%
+  filter(Date!="02-29")%>%
+  mutate(Date=as.numeric(as.factor(Date)),
+         Hour_chunks=as.factor(Hour_chunks),
+         Is_weekend=as.factor(Is_weekend),
+         Season=as.factor(Season),
+         Is_holiday=as.factor(Is_holiday),
+         Rain_or_snow=as.factor(Rain_or_snow))
+
+set.seed(735)
+ctree0=ctree(Bike_count ~ Hour_chunks + Min_temp + Max_temp + Min_humidity + Max_humidity + Wind_speed +
+                         Rain_or_snow + Is_weekend + Season + Is_holiday + Date,  
+             data = train_factor,control=ctree_control(maxdepth = 3))
+
+plot(ctree0,gp = gpar(fontsize = 10,font=2),     # font size changed to 6
+  inner_panel=node_inner,
+  ip_args=list(
+       abbreviate = FALSE, 
+       id = FALSE))
+
+set.seed(735)
+ctree0=ctree(Bike_count ~ Hour_chunks + Min_temp + Max_temp + Min_humidity + Max_humidity + Wind_speed +
+                         Rain_or_snow + Is_weekend + Season + Is_holiday+Date,  
+             data = train_factor)
+
+ctree_mda=varimp(ctree0)
+ctree_mda=data.table(var=names(ctree_mda),mda=ctree_mda)
+setorder(ctree_mda,-mda)
+
+# random forest
+x = train_factor %>%dplyr::select(-Year,-Bike_count)
+##y=unlist(seoul_data%>%%>%select(Bike_count))
+y= unlist(train_factor%>% ungroup()%>%dplyr::select(Bike_count)) ## I had to add ungroup() for this to work on my 
+set.seed(735)
+trCtl <- trainControl(method="cv", number=5, savePredictions=TRUE)
+rf.fit <- train(x, y, method="rf", trControl=trCtl)
+rf.fit$bestTune
+rf.fit$results[rownames(rf.fit$bestTune),]
+
+set.seed(735)
+model1 <- randomForest(Bike_count ~ Hour_chunks + Min_temp + Max_temp + Min_humidity + Max_humidity + Wind_speed+Rain_or_snow + Is_weekend + Season + Is_holiday+Date,data = train_factor, importance=TRUE, ntree=500,mtry = 7, do.trace=100)
+
+reprtree:::plot.getTree(model1,k=10,depth=4,cex=1,font=2)
+reprtree:::plot.getTree(model1,k=150,depth=4,cex=1,font=2)
+importance_matrix=model1$importance %>% as.data.frame(check.names=F)
+setorder(importance_matrix,-`%IncMSE`)
+ggplot(importance_matrix,aes(x=`%IncMSE`,y=IncNodePurity))+geom_point(color="grey30",alpha=0.7)+
+  theme_article()+
+  ggrepel::geom_label_repel(label=c(rownames(importance_matrix)[1:5],
+                                    rep("",nrow(importance_matrix)-5)),nudge_x=0.5,min.segment.length=0)+
+  xlab("Increase in MSE")+
+  ylab("Increase in node purity")
+
+
+y.pred_rf = predict(rf.fit, subset(test_factor, select=-c(Bike_count)))
+y.pred_ctree=predict(ctree0, subset(test_factor, select=-c(Bike_count)))
+cor(test_factor$Bike_count, y.pred_ctree, use = "pairwise.complete.obs")^2
+cor(test_factor$Bike_count, y.pred_rf, use = "pairwise.complete.obs")^2
+
+```
 
 # London bike data
 

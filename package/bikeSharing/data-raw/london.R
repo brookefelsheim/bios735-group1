@@ -9,11 +9,12 @@ library(dplyr)
 
 london <- read.csv("data-raw/LondonBikeData.csv", check.names = F)
 
-# Convert season from numeric to character
+# Convert season from numeric to factor
 london <- london %>%
-  mutate(Season = ifelse(season == 0, "Spring",
+  mutate(Season = factor(ifelse(season == 0, "Spring",
                          ifelse(season == 1, "Summer",
-                                ifelse(season == 2, "Autumn", "Winter"))))
+                                ifelse(season == 2, "Autumn", "Winter"))),
+                         levels = c("Spring", "Summer", "Autumn", "Winter")))
 
 # Extract date from timestamp
 london <- london %>%
@@ -21,7 +22,7 @@ london <- london %>%
 
 # Extract hour from timestamp
 london <- london %>%
-  mutate(Hour = as.numeric(sub(":.*", "", sub(".* ", "", london$timestamp))))
+  mutate(Hour = as.numeric(sub(":.*", "", sub(".* ", "", timestamp))))
 
 # Add day of the year column
 london <- london %>%
@@ -29,7 +30,7 @@ london <- london %>%
 
 # Add year column
 london <- london %>%
-  mutate(Year = ifelse(london$Date > "2016-01-03", "Year 2", "Year 1"))
+  mutate(Year = ifelse(Date > "2016-01-03", "Year 2", "Year 1"))
 
 # Create rain or snow column
 london <- london %>%
@@ -61,6 +62,9 @@ london <- london %>%
 # Make the Date Only Include Month and Day, not Year
 london <- london %>% mutate(Date = format(Date, format="%m-%d"))
 
+# Remove leap day
+london <- london %>%
+  filter(Date != "02-29")
 
 # Turn hourly data into 8-hour time chunks, keeping only the columns
 # that will be used in the predictive models. Hourly bike counts will
