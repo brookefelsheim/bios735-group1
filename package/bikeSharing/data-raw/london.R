@@ -27,6 +27,10 @@ london <- london %>%
 london <- london %>%
   mutate(Day = as.numeric(strftime(Date, format = "%j")))
 
+# Add year column
+london <- london %>%
+  mutate(Year = ifelse(london$Date > "2016-01-03", "Year 2", "Year 1"))
+
 # Create rain or snow column
 london <- london %>%
   mutate(Rain_or_snow = ifelse(weather_code %in% c(7, 10, 26), 1, 0))
@@ -67,7 +71,7 @@ london <- london %>% mutate(Date = format(Date, format="%m-%d"))
 london$Hour_chunks <- cut(london$Hour, c(0,8,16,24), right = FALSE)
 london <- london %>%
   group_by(Date, Hour_chunks, Day, Is_weekend, Is_holiday, Season,
-           Min_temp, Max_temp, Min_humidity, Max_humidity) %>%
+           Min_temp, Max_temp, Min_humidity, Max_humidity, Year) %>%
   summarise(
     Wind_speed = mean(Wind_speed),
     Rain_or_snow = if( sum(Rain_or_snow > 0) > 0 ) {1} else {0},
