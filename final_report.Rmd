@@ -40,9 +40,9 @@ london_test <- london[london$Year == "Year 2",]
 
 ## Negative Binomial Generalized Linear Mixed Model
 ```{r eval=FALSE, include=TRUE}
-glmm_fit <- MCEM_algorithm( beta_initial = c(7.5, 0.5, 1.0, -0.25, -0.25, -0.25,
-                                          -0.25, -0.75, 0, 0, 0, 0, 0, -0.5),
-                         theta_initial = 4.5,
+glmm_fit <- MCEM_algorithm( beta_initial = c(8.3, 1.5, 1.5, -0.25, -0.50, 0, 
+                                             0, -0.25, 0, 0, 0, 0, 0, -0.25),
+                         theta_initial = 10,
                          s2gamma_initial = 0.2,
                          M = 1000,
                          burn.in = 200,
