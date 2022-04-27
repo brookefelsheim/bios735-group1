@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(usethis)
 library(devtools)
-load_all("package/bikeSharing/")
+load_all("package/bikeSharing")
 set.seed(1)
 ```
 
@@ -76,6 +76,41 @@ rf_model_fit(rf_fit, dc, scale_to_london_mean = "yes")
 rf_model_fit(rf_fit, seoul, scale_to_london_mean = "yes") 
 ```
 
+
+
+```{r}
+seoul$city = "Seoul - Scaled"
+london_train$city = "London"
+london_test$city = "London"
+dc$city = "DC - Scaled"
+seoul$city2 = "Seoul - Scaled"
+london_train$city2 = "London - Train"
+london_test$city2 = "London - Test"
+dc$city2 = "DC - Scaled"
+scale_seoul = mean(seoul$Bike_count)/
+  mean(london$Bike_count)
+scale_dc = mean(dc$Bike_count)/
+  mean(london$Bike_count)
+seoul$Bike_count2 = seoul$Bike_count /scale_seoul
+london_test$Bike_count2 = london_test$Bike_count 
+london_train$Bike_count2 = london_train$Bike_count 
+dc$Bike_count2 = dc$Bike_count / scale_dc
+seoul$Year = 1
+
+
+all_data =rbind(seoul, london_train, london_test, dc)
+all_data$city = factor(all_data$city, levels = c("London",  "DC - Scaled", "Seoul - Scaled"))
+all_data$city2 = factor(all_data$city2, levels = c("London - Train", "London - Test", "DC - Scaled", "Seoul - Scaled"))
+
+ggplot(all_data, aes(x = Bike_count2))+geom_histogram(fill = "dark blue",aes(y = stat(density)))+facet_wrap(~city)+
+  theme_classic()+xlim(0,30000) + labs(title = "Distribution of Bike Counts for Cities", y = "Density", x = "Bike Count")
+ggplot(all_data, aes(x = Bike_count2))+geom_histogram(fill = "dark blue",aes(y = stat(density)))+facet_wrap(~city2)+
+  theme_classic()+xlim(0,30000) + labs(title = "Distribution of Bike Counts for Cities", y = "Density", x = "Bike Count")
+
+mean(london_test$Bike_count)
+mean(london_train$Bike_count)
+
+```
 
 
 # Discussion
