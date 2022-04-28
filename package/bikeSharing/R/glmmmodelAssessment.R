@@ -6,12 +6,14 @@
 #' @param model_glmm trained negative binomial mixed model for assessment
 #'                   (output of MCEM_algorithm() function)
 #' @param data pre-processed bike sharing data frame
-#'             with columns  Hour_chunks, Is_weekend, Is_holiday,
+#'             with columns Hour_chunks, Is_weekend, Is_holiday,
 #'             Season, Min_temp, Max_temp, Min_humidity, Max_humidity,
 #'             Wind_speed, Rain_or_snow, Date, Bike_count
-#' @param scale_to_london_mean "yes" or "no". If "yes",
+#' @param scale_to_reference_mean "yes" or "no". If "yes",
 #'             scales the bike count mean of the input
-#'             data to the London data bike count mean
+#'             data to the reference data bike count mean
+#' @param reference pre-processed bike sharing data frame with columns
+#'                  Date and Bike_count.
 #'
 #' @return a data frame summarizing the RMSE, MAE, and R2 value of the fitted
 #'         glmm model to the data
@@ -19,13 +21,15 @@
 #' @importFrom stats model.matrix cor
 #'
 #' @export
-glmm_model_fit <- function(model_glmm, data, scale_to_london_mean = "no"){
+glmm_model_fit <- function(model_glmm, data,
+                           scale_to_reference_mean = "no",
+                           reference) {
 
-  ## Keep only same days as in London set
-  data = data[data$Date %in% london$Date,]
+  ## Keep only same days as in reference set
+  data = data[data$Date %in% reference$Date,]
 
-  ## Name day ranef from london
-  names(model_glmm$day_ranef) = unique(london$Date)
+  ## Name day ranef from reference
+  names(model_glmm$day_ranef) = unique(reference$Date)
 
   ## Predict log Mean for each day Values
   model_matrix = model.matrix( Bike_count ~ Hour_chunks + Is_weekend +
@@ -40,11 +44,11 @@ glmm_model_fit <- function(model_glmm, data, scale_to_london_mean = "no"){
   pred = exp(logmeans)
 
 
-  ## Scale to London bike count mean
-  if(scale_to_london_mean == "yes"){
+  ## Scale to reference bike count mean
+  if(scale_to_reference_mean == "yes"){
     ## Scaling Factor
     scale = mean(data$Bike_count)/
-      mean(london$Bike_count)
+      mean(reference$Bike_count)
     pred = pred * scale
   }
 
