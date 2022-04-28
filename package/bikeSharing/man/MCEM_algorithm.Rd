@@ -5,15 +5,14 @@
 \title{Run MCEM algorithm to estimate NB GLMM bike count parameters}
 \usage{
 MCEM_algorithm(
-  beta_initial = c(7.49, 0.8, 1.06, -0.15, -0.23, -0.3, -0.18, -0.72, -0.01, 0.05, 0,
-    0, 0.01, -0.48),
-  theta_initial = 4.542,
+  beta_initial = c(8.3, 1.5, 1.5, -0.25, -0.5, 0, 0, -0.25, 0, 0, 0, 0, 0, -0.25),
+  theta_initial = 10,
   s2gamma_initial = 0.2,
   M = 1000,
   burn.in = 200,
-  tol = 10^-5,
+  tol = 10^-4,
   maxit = 100,
-  data = seoul,
+  data,
   trace = 0
 )
 }

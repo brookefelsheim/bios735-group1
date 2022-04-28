@@ -24,21 +24,21 @@
 #'         effect estimates, as well as epsilon and the iteration count
 #'
 #' @import data.table
+#' @import stats
 #' @importFrom optimx optimx
-#' @importFrom stats model.matrix
 #'
 #' @export
 MCEM_algorithm = function(
-  beta_initial = c(7.49, 0.8, 1.06, -0.15, -0.23, -0.3, -0.18, -0.72,
-                   -0.01, 0.05, 0, 0, 0.01, -0.48),
-  theta_initial = 4.542,
+  beta_initial = c(8.3, 1.5, 1.5, -0.25, -0.50, 0,
+                   0, -0.25, 0, 0, 0, 0, 0, -0.25),
+  theta_initial = 10,
   s2gamma_initial = 0.2,
   M = 1000,
   burn.in = 200,
-  tol = 10^-5,
+  tol = 10^-4,
   maxit = 100,
-  data = seoul,
-  trace  = 0
+  data,
+  trace = 0
 ) {
 
   tol = tol
