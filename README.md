@@ -69,11 +69,9 @@ Once the package is installed, the contents can be loaded into R with the follow
 ```
 library(bikeSharing)
 ```
-The raw and processed versions of the London, Seoul, and Washington, D.C. datasets are stored within the R package framework. The raw datasets and their pre-processing scripts are stored within the `raw-data/` directory of the package, and the processed datasets are found within the `data/` directory of the package. Once the contents of the package are loaded into R, the processed datasets can be immediately accessed as the variables `london`, `seoul`, and `dc`. For example, to view the structure of each processed dataset, the following commands can be run:     
+The raw and processed versions of the London, Seoul, and Washington, D.C. datasets are stored within the R package framework. The raw datasets and their pre-processing scripts are stored within the `raw-data/` directory of the package, and the processed datasets are found within the `data/` directory of the package. Once the contents of the package are loaded into R, the processed datasets can be immediately accessed as the variables `london`, `seoul`, and `dc`. To load all of the bike sharing datasets into the R environment, the following command can be run:      
 ```
-str(london)
-str(seoul)
-str(dc)
+data("london", "seoul", "dc")
 ```
 #### Package methods
 The following methods are included in the `bikeSharing` R package to train and evaluate the predictive models for our analysis:
