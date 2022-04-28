@@ -8,6 +8,9 @@
 #' to draw samples of the random effect and the Nelder-Mead algorithm is used
 #' to calculate the M-step.
 #'
+#' @param data pre-processed bike sharing data frame
+#'             with columns Bike_count, Hour_chunks,
+#'             Max_temp, Rain_or_snow, and Date
 #' @param beta_initial initial beta values
 #' @param theta_initial initial theta value
 #' @param s2gamma_initial initial value for s2gamma
@@ -15,9 +18,6 @@
 #' @param burn.in the number of beginning iteration samples to discard
 #' @param tol tolerance for convergence
 #' @param maxit maximum number of iterations to run
-#' @param data pre-processed bike sharing data frame
-#'             with columns Bike_count, Hour_chunks,
-#'             Max_temp, Rain_or_snow, and Date
 #' @param trace level of detailed output
 #'
 #' @return a list containing beta, theta, s2gamma, qfunction, and date random
@@ -29,6 +29,7 @@
 #'
 #' @export
 MCEM_algorithm = function(
+  data,
   beta_initial = c(8.3, 1.5, 1.5, -0.25, -0.50, 0,
                    0, -0.25, 0, 0, 0, 0, 0, -0.25),
   theta_initial = 10,
@@ -37,7 +38,6 @@ MCEM_algorithm = function(
   burn.in = 200,
   tol = 10^-4,
   maxit = 100,
-  data,
   trace = 0
 ) {
 

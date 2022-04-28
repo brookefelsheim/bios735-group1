@@ -5,6 +5,7 @@
 \title{Run MCEM algorithm to estimate NB GLMM bike count parameters}
 \usage{
 MCEM_algorithm(
+  data,
   beta_initial = c(8.3, 1.5, 1.5, -0.25, -0.5, 0, 0, -0.25, 0, 0, 0, 0, 0, -0.25),
   theta_initial = 10,
   s2gamma_initial = 0.2,
@@ -12,11 +13,14 @@ MCEM_algorithm(
   burn.in = 200,
   tol = 10^-4,
   maxit = 100,
-  data,
   trace = 0
 )
 }
 \arguments{
+\item{data}{pre-processed bike sharing data frame
+with columns Bike_count, Hour_chunks,
+Max_temp, Rain_or_snow, and Date}
+
 \item{beta_initial}{initial beta values}
 
 \item{theta_initial}{initial theta value}
@@ -30,10 +34,6 @@ MCEM_algorithm(
 \item{tol}{tolerance for convergence}
 
 \item{maxit}{maximum number of iterations to run}
-
-\item{data}{pre-processed bike sharing data frame
-with columns Bike_count, Hour_chunks,
-Max_temp, Rain_or_snow, and Date}
 
 \item{trace}{level of detailed output}
 }
