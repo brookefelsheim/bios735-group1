@@ -1,4 +1,4 @@
-# Predicting Bike Sharing System Demand: BIOS 735 Final Project
+# Predicting Bike Sharing Demand: BIOS 735 Final Project
 
 Jiawen Chen, Brooke Felsheim, Elena Kharitonova, Xinjie Qian, and Jairui Tang (Group 1)
 
