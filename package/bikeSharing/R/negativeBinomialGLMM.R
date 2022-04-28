@@ -274,7 +274,7 @@ sample.gamma.posterior.all = function(data,
     # draw M samples from the posterior for gamma_i
     samples.i =
       sample.gamma.posterior.i(
-        yi = data[data$Date == unique_date[i], Bike_count],
+        yi = data[data$Date == unique_date[i], "Bike_count"],
         xi =  X[data$Date == unique_date[i],],
         M = M,
         maxit = maxit,
@@ -387,7 +387,7 @@ Q = function(data,
 
   # loop over subjects
   for (i in 1:length(unique_date)) {
-    Q = Q + Qi(yi = data[data$Date == unique_date[i], Bike_count],
+    Q = Q + Qi(yi = data[data$Date == unique_date[i], "Bike_count"],
                xi =  X[data$Date == unique_date[i],],
                thetat = thetat,
                betat = betat,
