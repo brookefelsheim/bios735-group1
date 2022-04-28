@@ -20,17 +20,17 @@ checkBikeData <- function(data) {
     c("Bike_count", "Hour_chunks", "Rain_or_snow", "Date",
       "Is_weekend", "Is_holiday", "Season", "Min_temp", "Max_temp",
       "Min_humidity", "Max_humidity", "Wind_speed") %in%
-           colnames(seoul))) {
+           colnames(data))) {
     stop("Input data does not contain all necessary columns:
          Bike_count, Hour_chunks, Max_temp, Rain_or_snow, and Date")
   }
   if (!is.numeric(data$Bike_count)) {
     stop("Bike_count column must be numeric")
   }
-  if(length(levels(seoul$Hour_chunks)) != 3) {
+  if(length(levels(data$Hour_chunks)) != 3) {
     stop("Hour_chunks column must contain exactly 3 levels")
   }
-  if(!all(levels(seoul$Hour_chunks) == c("[0,8)", "[8,16)", "[16,24)"))) {
+  if(!all(levels(data$Hour_chunks) == c("[0,8)", "[8,16)", "[16,24)"))) {
     stop('Hour_chunks levels must be "[0,8)", "[8,16)", "[16,24)"')
   }
   if (!is.numeric(data$Max_temp)) {
