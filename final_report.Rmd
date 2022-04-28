@@ -1,6 +1,6 @@
 ---
 title: "Final Report"
-author: "Group 1: Jiawen Chen, Brooke Felsheim, Elena Kharitonova, Jairui Tang, and Xinjie Qian"
+author: "Group 1: Jiawen Chen, Brooke Felsheim, Elena Kharitonova, Xinjie Qian, and Jairui Tang"
 date: "4/29/2022"
 output: pdf_document
 ---
@@ -11,8 +11,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introduction
 
-```{r}
-library(usethis)
+As human populations are rising across the world, so is the proportion of people that live in urban areas. Estimates from the *UN World Urbanization Prospects* indicate that over 4.2 billion people (55% of the global population) currently live in urban areas, and by 2050, an additional 2.5 billion people (68% of the global population) could be living in urban areas^[United Nations, Department of Economic and Social Affairs, Population Division (2018). World Urbanization Prospects: The 2018 Revision, Online Edition.]. More people living in urban areas calls for more space-, cost-, and energy-efficient systems of transportation as an alternative to cars. One such promising transportation alternative is the implementation of bicycle sharing programs.     
+
+Bicycle sharing programs are transportation schemes that allow individuals to rent bicycles on a short-term basis for either a set rate or for free. Most bicycle sharing programs have many computer-controlled bicycle rack ``hubs" dispersed across a city that keep bikes locked and release them for use when a user enters the appropriate information/payment from a station or an app (Figure 1). A user can then ride the bike and return it to any other bicycle hub that is part of the same program. Many cities across the world have begun implementing bicycle sharing programs, including Chapel Hill, which has a Tar Heel Bikes sharing system^[https://move.unc.edu/bike/bikeshare/]. Systems like these provide convenient, inexpensive, and eco-friendly transportation options for individuals residing in a city.    
+
+Successful implementations of bike sharing programs depend on proper management of these systems. It is important for a bike sharing program to provide a stable supply of rental bikes to its population so its users feel that they can rely on the system for their transportation needs. The analysis of bike sharing data allows for a better understanding of the demand of rental bikes in a city, which, in turn, can help inform a city about how to provide appropriate supplies of rental bikes for its population.
+
+```{r message=FALSE}
 library(devtools)
 load_all("package/bikeSharing")
 set.seed(1)
@@ -20,8 +25,6 @@ set.seed(1)
 
 ```{r}
 str(london)
-str(dc)
-str(seoul)
 ```
 
 ```{r}
@@ -55,30 +58,38 @@ glmm_fit <- MCEM_algorithm( beta_initial = c(8.3, 1.5, 1.5, -0.25, -0.50, 0,
 str(glmm_fit)
 ```
 ```{r}
-glmm_model_fit(glmm_fit, london_train, scale_to_london_mean = "no") 
-glmm_model_fit(glmm_fit, london_test, scale_to_london_mean = "no") 
-glmm_model_fit(glmm_fit, dc, scale_to_london_mean = "yes") 
-glmm_model_fit(glmm_fit, seoul, scale_to_london_mean = "yes") 
+glmm_model_fit(glmm_fit, london_train, scale_to_reference_mean = "no", 
+               reference = london)
+glmm_model_fit(glmm_fit, london_test, scale_to_reference_mean = "no",
+               reference = london)
+glmm_model_fit(glmm_fit, dc, scale_to_reference_mean = "yes",
+               reference = london)
+glmm_model_fit(glmm_fit, seoul, scale_to_reference_mean = "yes",
+               reference = london)
 ```
 
 
 ## Random Forest
-```{r}
+```{r message=FALSE, warning=FALSE}
 rf_fit <- train_random_forest(data = london_train)
 rf_fit
 plot_rf_importance(london_train)
 ```
 
 ```{r}
-rf_model_fit(rf_fit, london_train, scale_to_london_mean = "no")
-rf_model_fit(rf_fit, london_test, scale_to_london_mean = "no") 
-rf_model_fit(rf_fit, dc, scale_to_london_mean = "yes") 
-rf_model_fit(rf_fit, seoul, scale_to_london_mean = "yes") 
+rf_model_fit(rf_fit, london_train, scale_to_reference_mean = "no", 
+             reference = london)
+rf_model_fit(rf_fit, london_test, scale_to_reference_mean = "no", 
+             reference = london)
+rf_model_fit(rf_fit, dc, scale_to_reference_mean = "yes", 
+             reference = london)
+rf_model_fit(rf_fit, seoul, scale_to_reference_mean = "yes", 
+             reference = london)
 ```
 
 
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 seoul$city = "Seoul - Scaled"
 london_train$city = "London"
 london_test$city = "London"
@@ -91,21 +102,31 @@ scale_seoul = mean(seoul$Bike_count)/
   mean(london$Bike_count)
 scale_dc = mean(dc$Bike_count)/
   mean(london$Bike_count)
-seoul$Bike_count2 = seoul$Bike_count /scale_seoul
+seoul$Bike_count2 = seoul$Bike_count / scale_seoul
 london_test$Bike_count2 = london_test$Bike_count 
 london_train$Bike_count2 = london_train$Bike_count 
 dc$Bike_count2 = dc$Bike_count / scale_dc
 seoul$Year = 1
 
 
-all_data =rbind(seoul, london_train, london_test, dc)
-all_data$city = factor(all_data$city, levels = c("London",  "DC - Scaled", "Seoul - Scaled"))
-all_data$city2 = factor(all_data$city2, levels = c("London - Train", "London - Test", "DC - Scaled", "Seoul - Scaled"))
+all_data = rbind(seoul, london_train, london_test, dc)
+all_data$city = factor(all_data$city, 
+                       levels = c("London",  "DC - Scaled", "Seoul - Scaled"))
+all_data$city2 = factor(all_data$city2, 
+                        levels = c("London - Train", "London - Test", 
+                                   "DC - Scaled", "Seoul - Scaled"))
 
-ggplot(all_data, aes(x = Bike_count2))+geom_histogram(fill = "dark blue",aes(y = stat(density)))+facet_wrap(~city)+
-  theme_classic()+xlim(0,30000) + labs(title = "Distribution of Bike Counts for Cities", y = "Density", x = "Bike Count")
-ggplot(all_data, aes(x = Bike_count2))+geom_histogram(fill = "dark blue",aes(y = stat(density)))+facet_wrap(~city2)+
-  theme_classic()+xlim(0,30000) + labs(title = "Distribution of Bike Counts for Cities", y = "Density", x = "Bike Count")
+ggplot(all_data, aes(x = Bike_count2)) + 
+  geom_histogram(fill = "dark blue", aes(y = stat(density))) + 
+  facet_wrap(~city) + theme_classic() + xlim(0,30000) + 
+  labs(title = "Distribution of Bike Counts for Cities", 
+       y = "Density", x = "Bike Count")
+
+ggplot(all_data, aes(x = Bike_count2)) + 
+  geom_histogram(fill = "dark blue", aes(y = stat(density))) + 
+  facet_wrap(~city2) + theme_classic() + xlim(0,30000) + 
+  labs(title = "Distribution of Bike Counts for Cities", 
+       y = "Density", x = "Bike Count")
 
 mean(london_test$Bike_count)
 mean(london_train$Bike_count)
