@@ -2,10 +2,29 @@
 % Please edit documentation in R/negativeBinomialGLMM.R
 \name{sample.gamma.posterior.all}
 \alias{sample.gamma.posterior.all}
-\title{Helper function to draw M samples from the posterior for gammai}
+\title{Run random walk sampler for all unique dates}
 \usage{
 sample.gamma.posterior.all(data, M, maxit, thetat, betat, s2gammat, trace = 0)
 }
+\arguments{
+\item{data}{a data table containing bike sharing data}
+
+\item{M}{chain length}
+
+\item{maxit}{the maximum number of iterations}
+
+\item{thetat}{the estimate for theta at EM iteration t}
+
+\item{betat}{the estimate for beta at EM iteration t}
+
+\item{s2gammat}{the estimate for s2gammat at EM iteration t}
+
+\item{trace}{level of detailed output}
+}
+\value{
+list containing random chain results
+}
 \description{
-Helper function to draw M samples from the posterior for gammai
+This helper function runs the random walk sampler for
+all unique dates
 }

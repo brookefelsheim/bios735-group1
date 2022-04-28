@@ -2,10 +2,17 @@
 % Please edit documentation in R/negativeBinomialGLMM.R
 \name{g.sim}
 \alias{g.sim}
-\title{Helper function that adds prior u to random walk}
+\title{Add prior u to random walk}
 \usage{
 g.sim(u)
 }
+\arguments{
+\item{u}{prior}
+}
+\value{
+u + sampled random walk value
+}
 \description{
-Helper function that adds prior u to random walk
+This helper function simulates a sample from the proposal
+density g, which is the prior plus the value from a random walk
 }

@@ -19,6 +19,8 @@ MCEM_algorithm(
 \arguments{
 \item{beta_initial}{initial beta values}
 
+\item{theta_initial}{initial theta value}
+
 \item{s2gamma_initial}{initial value for s2gamma}
 
 \item{M}{length of chain}
@@ -34,8 +36,6 @@ with columns Bike_count, Hour_chunks,
 Max_temp, Rain_or_snow, and Date}
 
 \item{trace}{level of detailed output}
-
-\item{theta_inital}{initial theta value}
 }
 \value{
 a list containing beta, theta, s2gamma, qfunction, and date random

@@ -2,10 +2,31 @@
 % Please edit documentation in R/negativeBinomialGLMM.R
 \name{sample.gamma.posterior.i}
 \alias{sample.gamma.posterior.i}
-\title{Helper function to run random walk sampler for subject i}
+\title{Run random walk sampler for unique date i}
 \usage{
 sample.gamma.posterior.i(yi, xi, M, maxit, thetat, betat, s2gammat, trace = 0)
 }
+\arguments{
+\item{yi}{a vector containing the bike counts observations for date i}
+
+\item{xi}{a matrix containing the predictor variable observations for date i}
+
+\item{M}{chain length}
+
+\item{maxit}{the maximum number of iterations}
+
+\item{thetat}{the estimate for theta at EM iteration t}
+
+\item{betat}{the estimate for beta at EM iteration t}
+
+\item{s2gammat}{the estimate for s2gammat at EM iteration t}
+
+\item{trace}{level of detailed output}
+}
+\value{
+gammai, list of random chain results for date i
+}
 \description{
-Helper function to run random walk sampler for subject i
+This helper function runs the random walk sampler for
+a single unique date i
 }

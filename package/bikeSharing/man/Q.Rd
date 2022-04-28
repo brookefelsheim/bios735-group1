@@ -2,10 +2,30 @@
 % Please edit documentation in R/negativeBinomialGLMM.R
 \name{Q}
 \alias{Q}
-\title{Helper function for calculating the Q-function}
+\title{Calculate the Q-function for all unique dates}
 \usage{
 Q(data, thetat, betat, s2gammat, samples, burn_in, logs2gammat = F)
 }
+\arguments{
+\item{data}{a data table containing bike sharing data}
+
+\item{thetat}{the estimate for theta at EM iteration t}
+
+\item{betat}{the estimate for beta at EM iteration t}
+
+\item{s2gammat}{the estimate for s2gammat at EM iteration t}
+
+\item{samples}{samples from random walk sampler}
+
+\item{burn_in}{iterations to discard for burn_in}
+
+\item{logs2gammat}{indicates whether s2gammat is initially passed on
+the log scale}
+}
+\value{
+q function values
+}
 \description{
-Helper function for calculating the Q-function
+This is a helper function that calculates the Q-function for
+all unique dates
 }
