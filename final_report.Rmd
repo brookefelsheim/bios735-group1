@@ -6,8 +6,13 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 ```
+
+```{r include=FALSE}
+library(knitr)
+```
+
 
 # Introduction
 
@@ -15,19 +20,28 @@ As human populations are rising across the world, so is the proportion of people
 
 Bicycle sharing programs are transportation schemes that allow individuals to rent bicycles on a short-term basis for either a set rate or for free. Most bicycle sharing programs have many computer-controlled bicycle rack ``hubs" dispersed across a city that keep bikes locked and release them for use when a user enters the appropriate information/payment from a station or an app (Figure 1). A user can then ride the bike and return it to any other bicycle hub that is part of the same program. Many cities across the world have begun implementing bicycle sharing programs, including Chapel Hill, which has a Tar Heel Bikes sharing system^[https://move.unc.edu/bike/bikeshare/]. Systems like these provide convenient, inexpensive, and eco-friendly transportation options for individuals residing in a city.    
 
-Successful implementations of bike sharing programs depend on proper management of these systems. It is important for a bike sharing program to provide a stable supply of rental bikes to its population so its users feel that they can rely on the system for their transportation needs. The analysis of bike sharing data allows for a better understanding of the demand of rental bikes in a city, which, in turn, can help inform a city about how to provide appropriate supplies of rental bikes for its population.
-
-```{r message=FALSE}
-library(devtools)
-load_all("package/bikeSharing")
-set.seed(1)
+```{r bike-img, fig.align = 'center', out.width = "50%", fig.cap = "A `hub' of bicycles belonging to the Santander Cycles system in London. SOPA Images/Lightrocket via Getty Images"}
+include_graphics("report_files/santander_bikes.jpg")
 ```
 
-```{r}
+Successful implementations of bike sharing programs depend on proper management of these systems. It is important for a bike sharing program to provide a stable supply of rental bikes to its population so its users feel that they can rely on the system for their transportation needs. The analysis of bike sharing data allows for a better understanding of the demand of rental bikes in a city, which, in turn, can help inform a city about how to provide appropriate supplies of rental bikes for its population.
+
+```{r echo=TRUE}
+if(!require("bikeSharing", quietly = TRUE))
+  install.packages("package/bikeSharing_1.0.0.tar.gz", repos = NULL)
+library(bikeSharing)
+```
+
+```{r echo=TRUE}
 str(london)
 ```
 
-```{r}
+```{r echo=TRUE}
+dim(seoul)
+dim(dc)
+```
+
+```{r echo=TRUE}
 london_train <- london[london$Year == "Year 1",]
 london_test <- london[london$Year == "Year 2",]
 ```
@@ -54,10 +68,10 @@ glmm_fit <- MCEM_algorithm( beta_initial = c(8.3, 1.5, 1.5, -0.25, -0.50, 0,
                          data = london_train
                          )
 ```
-```{r}
+```{r echo=TRUE}
 str(glmm_fit)
 ```
-```{r}
+```{r echo=TRUE}
 glmm_model_fit(glmm_fit, london_train, scale_to_reference_mean = "no", 
                reference = london)
 glmm_model_fit(glmm_fit, london_test, scale_to_reference_mean = "no",
@@ -70,13 +84,16 @@ glmm_model_fit(glmm_fit, seoul, scale_to_reference_mean = "yes",
 
 
 ## Random Forest
-```{r message=FALSE, warning=FALSE}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 rf_fit <- train_random_forest(data = london_train)
 rf_fit
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 plot_rf_importance(london_train)
 ```
 
-```{r}
+```{r echo=TRUE}
 rf_model_fit(rf_fit, london_train, scale_to_reference_mean = "no", 
              reference = london)
 rf_model_fit(rf_fit, london_test, scale_to_reference_mean = "no", 
