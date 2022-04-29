@@ -7,12 +7,17 @@
 #' @param data pre-processed bike sharing data frame
 #'             with columns Hour_chunks, Is_weekend, Is_holiday,
 #'             Season, Min_temp, Max_temp, Min_humidity, Max_humidity,
-#'             Wind_speed, Rain_or_snow, Date, Bike_count
+#'             Wind_speed, Rain_or_snow, Date, Bike_count. This is the
+#'             dataset the model is being assessed on.
 #' @param scale_to_reference_mean "yes" or "no". If "yes",
 #'             scales the bike count mean of the input
 #'             data to the reference data bike count mean
 #' @param reference pre-processed bike sharing data frame with columns
-#'                  Date and Bike_count.
+#'                  Hour_chunks, Is_weekend, Is_holiday, Season,
+#'                  Min_temp, Max_temp, Min_humidity, Max_humidity,
+#'                  Wind_speed, Rain_or_snow, Date, Bike_count. This is
+#'                  the dataset that the model is being referenced to
+#'                  (should be the set the model was trained on).
 #'
 #' @return a data frame summarizing the RMSE, MAE, and R2 value of the fitted
 #'         rf model to the data
@@ -22,6 +27,15 @@
 #' @export
 rf_model_fit <- function(model, data, scale_to_reference_mean = "no",
                          reference) {
+
+  checkBikeData(data)
+  checkBikeData(reference)
+
+  checkModelRF(model)
+
+  if (!(scale_to_reference_mean %in% c("yes", "no"))) {
+    stop("scale_to_reference_mean must be 'yes' or 'no'")
+  }
 
   x = subset(data,
   select = c("Hour_chunks", "Is_weekend", "Is_holiday", "Season", "Min_temp",
