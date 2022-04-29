@@ -48,19 +48,12 @@ The variables that are used to predict bike rental count in both models are the 
 
 ### R Package
 
-The source data and methods used to train and evaluate the models used in our analysis were included in R package named `bikeSharing`. This contents of this package can be found within the `package/` directory of this repository.
+The source data and methods used to train and evaluate the models used in our analysis were included in R package named `bikeSharing`. The contents of this package and the zipped package source file can be found within the `package/` directory of this repository.
 
-The R package can either be installed via github or locally using in R the zipped package source file.
+#### Installation
+The R package can be installed locally in R using the zipped package source file.     
 
-#### Installation via Github
-```
-if (!require("devtools", quietly = TRUE))
-    install.packages("devtools")
-library(devtools)
-install_github("brookefelsheim/bios731-group1/package/bikeSharing")
-```
-#### Installation via source file
-The `bikeSharing_1.0.0.tar.gz` file can be found under the `package/` directory of this repository. Before running the code below, ensure that `bikeSharing_1.0.0.tar.gz` is in the working directory, or specify the full path to the file.
+Before running the code below, ensure that `bikeSharing_1.0.0.tar.gz` is in the working directory, or specify the full path to the file. Install `bikeSharing` in R as follows:     
 ```
 install.packages("bikeSharing_1.0.0.tar.gz", repos = NULL)
 ```
