@@ -143,7 +143,7 @@ To investigate which variables affect the prediction most, we calculate the impo
 knitr::kable(ctree_mda)
 ```
 
-In random forest, we calculte the maximum increase in MSE when deleting a variable.
+In random forest, we calculte the increase in MSE when deleting a variable.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE,fig.width=5,fig.height=4,fig.align='center'}
 plot_rf_importance(london_train)
