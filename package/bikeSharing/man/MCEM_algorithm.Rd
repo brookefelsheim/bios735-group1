@@ -21,21 +21,22 @@ MCEM_algorithm(
 with columns Bike_count, Hour_chunks,
 Max_temp, Rain_or_snow, and Date}
 
-\item{beta_initial}{initial beta values}
+\item{beta_initial}{initial beta values (vector of 14 numeric values)}
 
-\item{theta_initial}{initial theta value}
+\item{theta_initial}{initial theta value (single numeric value)}
 
-\item{s2gamma_initial}{initial value for s2gamma}
+\item{s2gamma_initial}{initial value for s2gamma (single numeric value)}
 
-\item{M}{length of chain}
+\item{M}{length of chain (single numeric count value)}
 
-\item{burn.in}{the number of beginning iteration samples to discard}
+\item{burn.in}{the number of beginning iteration samples to discard
+(single numeric count value)}
 
-\item{tol}{tolerance for convergence}
+\item{tol}{tolerance for convergence (single numeric value)}
 
-\item{maxit}{maximum number of iterations to run}
+\item{maxit}{maximum number of iterations to run (single numeric count value)}
 
-\item{trace}{level of detailed output}
+\item{trace}{level of detailed output (single numeric value)}
 }
 \value{
 a list containing beta, theta, s2gamma, qfunction, and date random

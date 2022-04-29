@@ -11,14 +11,15 @@
 #' @param data pre-processed bike sharing data frame
 #'             with columns Bike_count, Hour_chunks,
 #'             Max_temp, Rain_or_snow, and Date
-#' @param beta_initial initial beta values
-#' @param theta_initial initial theta value
-#' @param s2gamma_initial initial value for s2gamma
-#' @param M length of chain
+#' @param beta_initial initial beta values (vector of 14 numeric values)
+#' @param theta_initial initial theta value (single numeric value)
+#' @param s2gamma_initial initial value for s2gamma (single numeric value)
+#' @param M length of chain (single numeric count value)
 #' @param burn.in the number of beginning iteration samples to discard
-#' @param tol tolerance for convergence
-#' @param maxit maximum number of iterations to run
-#' @param trace level of detailed output
+#'                (single numeric count value)
+#' @param tol tolerance for convergence (single numeric value)
+#' @param maxit maximum number of iterations to run (single numeric count value)
+#' @param trace level of detailed output (single numeric value)
 #'
 #' @return a list containing beta, theta, s2gamma, qfunction, and date random
 #'         effect estimates, as well as epsilon and the iteration count
@@ -42,6 +43,10 @@ MCEM_algorithm = function(
 ) {
 
   checkBikeData(data)
+
+  checkParamsMCEM(beta_initial = beta_initial, theta_initial = theta_initial,
+                  s2gamma_initial = s2gamma_initial, M = M, burn.in = burn.in,
+                  tol = tol, maxit = maxit, trace = trace)
 
   tol = tol
   maxit = maxit
