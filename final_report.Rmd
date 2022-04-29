@@ -145,7 +145,7 @@ knitr::kable(ctree_mda)
 
 In random forest, we calculte the maximum increase in MSE when deleting a variable.
 
-```{r echo=TRUE, message=FALSE, warning=FALSE,fig.width=5,fig.height=4,fig.align='center'}
+```{r echo=FALSE, message=FALSE, warning=FALSE,fig.width=5,fig.height=4,fig.align='center'}
 plot_rf_importance(london_train)
 ```
 
@@ -255,3 +255,9 @@ mean(london_train$Bike_count)
 
 
 # Reference
+Hothorn T, Hornik K, Zeileis A (2006). “Unbiased Recursive Partitioning: A Conditional
+Inference Framework.” Journal of Computational and Graphical Statistics, 15(3), 651–674.
+doi:10.1198/106186006X133933.
+
+
+
