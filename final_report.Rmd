@@ -149,7 +149,7 @@ In random forest, we calculte the maximum increase in MSE when deleting a variab
 plot_rf_importance(london_train)
 ```
 
-The top important variables of the conditional inference tree and random forest are similar. The hour chunk is the most important variable in both models. Additionally, the maximum temperature has a significant impact on the model prediction. Additional details of the variables are discussed in the discussion section. We further compare the preformance of random forest and conditional inference tree using the second year bike renting data in London. Conditional inference tree results in a $R^2=0.81$ and random forest has $R^2=0.91$. Due the similarity in these two models, we selected random forest tree in the further comparison.
+The top important variables of the conditional inference tree and random forest are similar. The hour chunk is the most important variable in both models. Additionally, the maximum temperature has a significant impact on the model prediction. Additional details of the variables are discussed in the discussion section. We further compare the performance of random forest and conditional inference tree using the second year bike renting data in London. Conditional inference tree results in a $R^2=0.81$ and random forest has $R^2=0.91$. Due the similarity in these two models, we selected random forest tree in the further comparison.
 
 
 
