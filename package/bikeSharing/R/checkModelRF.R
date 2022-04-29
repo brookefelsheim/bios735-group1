@@ -15,7 +15,5 @@ checkModelRF <- function(rf.model) {
   if (rf.model$method != "rf") {
     stop("rf.model$method is not 'rf'")
   }
-  if (rf.model$label != "Random Forest") {
-    stop("rf.model$label is not 'Random Forest'")
-  }
+
 }
