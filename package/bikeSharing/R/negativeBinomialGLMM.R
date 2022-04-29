@@ -41,6 +41,8 @@ MCEM_algorithm = function(
   trace = 0
 ) {
 
+  checkBikeData(data)
+
   tol = tol
   maxit = maxit
   iter = 0
@@ -271,10 +273,12 @@ sample.gamma.posterior.all = function(data,
 
     if(trace > 0) print(i)
 
+    Bike_count <- NULL # bind to object to avoid global variable warning
+
     # draw M samples from the posterior for gamma_i
     samples.i =
       sample.gamma.posterior.i(
-        yi = data[data$Date == unique_date[i], "Bike_count"],
+        yi = data[data$Date == unique_date[i], Bike_count],
         xi =  X[data$Date == unique_date[i],],
         M = M,
         maxit = maxit,
@@ -387,7 +391,8 @@ Q = function(data,
 
   # loop over subjects
   for (i in 1:length(unique_date)) {
-    Q = Q + Qi(yi = data[data$Date == unique_date[i], "Bike_count"],
+    Bike_count <- NULL # bind to object to avoid global variable warning
+    Q = Q + Qi(yi = data[data$Date == unique_date[i], Bike_count],
                xi =  X[data$Date == unique_date[i],],
                thetat = thetat,
                betat = betat,
