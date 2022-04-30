@@ -23,7 +23,7 @@ library(partykit)
 
 # Introduction
 
-As human populations are rising across the world, so is the proportion of people that live in urban areas. Estimates from the *UN World Urbanization Prospects* indicate that over 4.2 billion people (55% of the global population) currently live in urban areas, and by 2050, an additional 2.5 billion people (68% of the global population) could be living in urban areas^[United Nations, Department of Economic and Social Affairs, Population Division (2018). World Urbanization Prospects: The 2018 Revision, Online Edition.]. More people living in urban areas calls for more space-, cost-, and energy-efficient systems of transportation as an alternative to cars. One such promising transportation alternative is the implementation of bicycle sharing programs.     
+As human populations are rising across the world, so is the proportion of people that live in urban areas. Estimates from the *UN World Urbanization Prospects* (2018) indicate that over 4.2 billion people (55% of the global population) currently live in urban areas, and by 2050, an additional 2.5 billion people (68% of the global population) could be living in urban areas. More people living in urban areas calls for more space-, cost-, and energy-efficient systems of transportation as an alternative to cars. One such promising transportation alternative is the implementation of bicycle sharing programs.     
 
 Bicycle sharing programs are transportation schemes that allow individuals to rent bicycles on a short-term basis for either a set rate or for free. Most bicycle sharing programs have many computer-controlled bicycle rack ``hubs" dispersed across a city that keep bikes locked and release them for use when a user enters the appropriate information/payment from a station or an app (Figure 1). A user can then ride the bike and return it to any other bicycle hub that is part of the same program. Many cities across the world have begun implementing bicycle sharing programs, including Chapel Hill, which has a Tar Heel Bikes sharing system^[https://move.unc.edu/bike/bikeshare/]. Systems like these provide convenient, inexpensive, and eco-friendly transportation options for individuals residing in a city.    
 ```{r bike-img, fig.align = 'center', out.width = "50%", fig.cap = "A `hub' of bicycles belonging to the Santander Cycles system in London. SOPA Images/Lightrocket via Getty Images"}
@@ -157,9 +157,9 @@ Step 3: Pick the new value for $b_i^{(t+1)}$ such that
     b_i^{(t)} &\text{otherwise}.
     \end{aligned}\right.
  $$
-Step 4: Set t=t+1 and return to step 1
+Step 4: Set t=t+1 and return to step 1.
 
-
+Also we will use Nelder-Mead in the M-step because it does not require 1st or 2nd derivatives and it is robust.
 
 
 ```{r eval=FALSE, include=TRUE, echo=TRUE}
@@ -179,6 +179,8 @@ glmm_fit <- MCEM_algorithm( beta_initial = c(8.3, 1.5, 1.5, -0.25, -0.50, 0,
 ```{r echo=TRUE}
 str(glmm_fit)
 ```
+
+
 
 ## Machine learning models
 
@@ -465,3 +467,5 @@ Inference Framework.” Journal of Computational and Graphical Statistics, 15(3)
 doi:10.1198/106186006X133933.
 
 Sylwia P., Mariusz K., Carmelo D (2021). "Impact of environment on bicycle travel demand—Assessment using bikeshare system data." Sustainable Cities and Society, 67, [102724]. https://doi.org/10.1016/j.scs.2021.102724
+
+United Nations, Department of Economic and Social Affairs, Population Division (2018). World Urbanization Prospects: The 2018 Revision, Online Edition.
