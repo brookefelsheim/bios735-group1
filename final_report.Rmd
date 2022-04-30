@@ -127,7 +127,7 @@ Since the random effects $b_i$ are unobservable, this means they must be integra
 So thus, the log likelihood is found to be
 \begin{equation}
 \begin{split} 
-    l(1/\theta, \beta, \sigma^2_\gamma) = \sum_{i=1}^{365} log \bigg[ \int \prod_{j=1}^{3} \frac{\Gamma(y_{ij} + \theta)}{\Gamma(y_{ij} + 1)\Gamma(\theta)} 
+    l(\theta, \beta, \sigma^2_\gamma) = \sum_{i=1}^{365} log \bigg[ \int \prod_{j=1}^{3} \frac{\Gamma(y_{ij} + \theta)}{\Gamma(y_{ij} + 1)\Gamma(\theta)} 
     \left( \frac{\theta}{\theta +  e^{x_{ij}^T \beta + b_i}} \right)^{\theta} \cdot \\
     \left(\frac{e^{x_{ij} \beta + b_i}}{\theta +  e^{x_{ij} \beta + b_i}} \right)^{y_{ij}} \frac{1}{\sqrt{2 \pi \sigma^2_\gamma}} \exp\left(-\frac{b_i^2}{2\sigma^2_\gamma} \right)
     db_i
