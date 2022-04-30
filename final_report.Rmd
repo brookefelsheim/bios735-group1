@@ -208,7 +208,16 @@ cat report_files/london_cat_output.txt
 str(glmm_fit)
 ```
 
+```{r echo=FALSE}
 
+x <- c(10.380,12.726,14.086,16.304,17.007,17.768,18.032,17.536, 18.146,18.152,17.895,17.985,18.295,18.380,18.497,18.442,18.532,18.638,18.449,18.310,18.560,18.519,18.422)
+
+
+
+plot(x, type="l", xlab="Iteration", ylab = "theta")
+points(x,pch=16)
+```
+As we can see in the figure, the estimation of $\theta$, $\hat{\theta}$ converges quickly and from $9^{th}$ iteration, it starts to float near the true $\theta$.
 
 ## Machine learning models
 
