@@ -6,7 +6,7 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, eval = FALSE)
+knitr::opts_chunk$set(echo = FALSE)
 ```
 
 ```{r include=FALSE}
@@ -71,13 +71,12 @@ london_train <- london[london$Year == "Year 1",]
 london_test <- london[london$Year == "Year 2",]
 ```
 
-\pagebreak
 
 # Methods
 
 ## Negative Binomial Generalized Linear Mixed Model
 
-Let $y_{ij}$ be the number of bikes rented at hour chunk $j$ of day $i$. Thus $i$ ranges from 1 to 365, and $j$ ranges from 1 to 3, corresponding to hour chunks [00:00 - 8:00) [8:00-16:00), [16:00-24:00). We assume that the number of bikes rented for a given hour chunk within a specific day follows a negative binomial distribution, so $Y_{ij} \sim NB(\mu_{ij}, \theta)$ using the Hilbe parameterization, so:
+Let $y_{ij}$ be the number of bikes rented at hour chunk $j$ of day $i$. Thus $i$ ranges from 1 to 365, and $j$ ranges from 1 to 3, corresponding to hour chunks [00:00 - 8:00, 8:00-16:00, 16:00-24:00]. We assume that the number of bikes rented for a given hour chunk within a specific day follows a negative binomial distribution, so $Y_{ij} \sim NB(\mu_{ij}, \theta)$ using the Hilbe parameterization, so:
 
 \begin{equation}
 P(Y_{ij} = y_{ij}|\mu_{ij}, \theta) =  \frac{\Gamma(y_{ij} + \theta)}{\Gamma(y_{ij} + 1)\Gamma(\theta)} \left( \frac{\theta}{\theta + \mu_{ij}} \right)^{\theta} \left(\frac{\mu_{ij}}{\theta +  \mu_{ij}} \right)^{y_{ij}}
@@ -90,8 +89,8 @@ The mean of $y_{ij}$ for each day $i$ at hour chunk $j$ is $\mu_{ij}$, which we 
 \end{equation}
 
 Let $x_{ij}$ = (1,
-I(HourChunk$_{ij}$ = [8:00,16:00)),
-I(HourChunk$_{ij}$ = [16:00,24:00)),
+I(HourChunk$_{ij}$ = [8,16)),
+I(HourChunk$_{ij}$ = [16,24)),
 Weekend$_{i}$,
 Holiday$_{i}$,
 I(Season$_{i}$ = Spring),
@@ -108,7 +107,7 @@ HourChunk$_{ij}$ is a categorical variable corresponding to the hour chunk $j$ o
 Holiday$_{i}$ is a binary variable with 1 if day $i$ is a holiday, 0 if it is not. Season$_{i}$ is a categorical variable corresponding to which season day $i$ is in, with the reference season being Autumn. The Min_Temperature$_{i}$ and Max_Temperature$_{i}$ are the minimum and maximum temperature of day $i$, respectively. Similarly, 
 The Min_Humidity$_{i}$ and Max_Humidity$_{i}$ are the minimum and maximum humidity of day $i$, respectively. Wind_Speed$_{ij}$ is the average wind speed of hour chunk $j$ of day $i$. Rain_or_Snow$_{i}$ is a binary variable with 1 if during day $i$ hour chunk $j$ there is any rain or snow, 0 if there is not. Thus $\beta = (\beta_0, \beta_1, \beta_2, \beta_3, \beta_4, \beta_5, \beta_6, \beta_7, \beta_8,\beta_9, \beta_{10}, \beta_{11}, \beta_{12}, \beta_{13})'$.  
 
-In Equation (2), $b_i$ is the unobserved random effect that the day $i$ has on the number of rented bikes at any given hour chunk. It is assumed that $b_i \sim N(0,\sigma^2_\gamma)$. It is assumed that $b_k$ and $b_j$ are independent for any $k \neq j$.  
+In Equation (2), $b_i$ is the unobserved random effect that the day $i$ has on the number of rented bikes at any given hour chunk. It is assumed that $b_i \sim N(0,\sigma^2_\gamma)$.
 
 
 Thus, of interest is the estimate $\theta$, $\beta$, and $\sigma^2_\gamma$. Equations 1 and 2 can be combined to obtain the following likelihood equation for a given day ($i$). 
@@ -126,61 +125,42 @@ Since the random effects $b_i$ are unobservable, this means they must be integra
 \[   = \prod_{i=1}^{365} \left[ \int \prod_{j=1}^{3} \frac{\Gamma(y_{ij} + \theta)}{\Gamma(y_{ij} + 1)\Gamma(\theta)} \left( \frac{\theta}{\theta +  e^{x_{ij}^T \beta + b_i}} \right)^{\theta} \left(\frac{  e^{x_{ij}^T \beta + b_i}}{\theta +  e^{x_{ij}^T \beta + b_i}} \right)^{y_{ij}} \frac{1}{\sqrt{2 \pi \sigma^2_\gamma}} \exp\left(-\frac{b_i^2}{2\sigma^2}\right) db_i \right]   \]
 
 So thus, the log likelihood is found to be
-
-\[
+\begin{equation}
+\begin{split} 
     l(\theta, \beta, \sigma^2_\gamma) = \sum_{i=1}^{365} log \bigg[ \int \prod_{j=1}^{3} \frac{\Gamma(y_{ij} + \theta)}{\Gamma(y_{ij} + 1)\Gamma(\theta)} 
     \left( \frac{\theta}{\theta +  e^{x_{ij}^T \beta + b_i}} \right)^{\theta} \cdot \\
     \left(\frac{e^{x_{ij} \beta + b_i}}{\theta +  e^{x_{ij} \beta + b_i}} \right)^{y_{ij}} \frac{1}{\sqrt{2 \pi \sigma^2_\gamma}} \exp\left(-\frac{b_i^2}{2\sigma^2_\gamma} \right)
     db_i
     \bigg] 
-    \]
-
-This log-likelihood will be maximized to obtain estimates for $\theta, \beta, \sigma^2_\gamma$ through an MCEM approach. Assuming that the $b_i$'s were known, we first define the complete data log likelihood as: 
-
-\[ \log  L_C(\theta, \beta, \sigma^2_\gamma| \mathbf{y}, \mathbf{b})  =  \log \left[ \prod_{i=1}^{365} \left( \prod_{j=1}^{3} f(y_{ij}|\mu_{ij})  f(b_i | \sigma^2_\gamma) \right) \right]  = \sum_{i=1}^{365}\log  \left( \prod_{j=1}^{3} f(y_{ij}|\mu_{ij})  f(b_i | \sigma^2_\gamma) \right) \]
-
-\[ \textrm{So, } l_C(\theta, \beta, \sigma^2_\gamma| \mathbf{y}, \mathbf{b})    = \sum_{i=1}^{365} \left( \sum_{j=1}^{3} \log f(y_{ij}|\mu_{ij})  + \log f(b_i | \sigma^2_\gamma) \right) \]
-
-Thus, for the MCEM algorithm, we will be maximizing the expectation of the complete data log likelihood, otherwise known as the Q-function at step $t$. So the Q-function is defined as the following:
-
-
-\[Q(\theta, \beta, \sigma^2_\gamma|y, \theta^{(t)}, \beta^{(t)}, {\sigma^2_\gamma}^{(t)}) = E[l_C(\theta, \beta, \sigma^2_\gamma| \mathbf{y}, \mathbf{b})|y, \theta^{(t)}, \beta^{(t)}, {\sigma^2_\gamma}^{(t)}]  \]
-\[ = E\left[ \sum_{i=1}^{365} \left( \sum_{j=1}^{3} \log f(y_{ij}|\mu_{ij}^{(t)})  + \log f(b_i | {\sigma^2_\gamma}^{(t)}) \right) \right] \]
-
-\[
-=  \sum_{i=1}^{365} \left[ \int \left( \sum_{j=1}^{3} \log f(y_{ij}|\mu_{ij}^{(t)})  + \log f(b_i | {\sigma^2_\gamma}^{(t)}) f(b_i |y, \theta^{(t)}, \beta^{(t)}, {\sigma^2_\gamma}^{(t)} \right) db_i \right]
- \]
- 
-Where ${ \mu_{ij}^{(t)} = e^{ x_{ij}^T \beta^{(t)}   + b_i  } }$ and ${f(b_i |y, \theta^{(t)}, \beta^{(t)}, {\sigma^2_\gamma}^{(t)} )}$ is  the posterior distribution of $b_i$ given the observed data and the current parameter estimates.  Let $Y_i=(y_{i1},y_{i2},y_{i3})^T$. The density function for $b_i$ given $Y_i, \beta^{(t)}, \theta^{(t)}, {\sigma^2_\gamma}^{(t)}$ is:
-
-\begin{equation}
-\begin{split} 
-    f(b_i | Y_i,\theta^{(t)}, \beta^{(t)}, {\sigma^2_\gamma}^{(t)}) \propto f(Y_i | b_i, \theta^{(t)}, \beta^{(t)}, {\sigma^2_\gamma}^{(t)})\cdot f(b_i|{\sigma^2_\gamma}^{(t)}) \\ \propto \prod_{j=1}^{3} \bigg(\frac{\theta^{(t)}}{\mu_{ij}^{(t)}+\theta^{(t)}}\bigg)^{\theta^{(t)}}\cdot \bigg(\frac{\mu_{ij}^{(t)}}{\mu_{ij}^{(t)}+\theta^{(t)}}\bigg)^{y_{ij}}\cdot \exp\bigg(-\frac{b_i^2}{2{\sigma^2_\gamma}^{(t)}}\bigg) \\
-    \propto \sum_{j=1}^{3} \bigg[ (y_{ij}\log\mu_{ij}^{(t)}-(y_{ij}+\theta^{(t)})\log(\mu_{ij}^{(t)}+\theta^{(t)}))-\frac{b_i^2}{2{\sigma^2_\gamma}^{(t)}}\bigg]
 \end{split}
 \end{equation}
 
-If we could sample from this posterior distribution of $b_i$, we could approximate this integral using a montecarlo approach. So,
+We will use MCEM algorithm to solve the problem and use Metropolis Hastings Algorithm with a random walk to sample the random effects $b_i$ for the $i-$th day. Let $Y_i=(y_{i1},y_{i2},y_{i3})^T$. The density function for $b_i$ given $Y_i, \beta, \theta, \sigma^2_\gamma$ is:
+
+\begin{equation}
+\begin{split} 
+    P(b_i | Y_i,\theta, \beta, \sigma^2_\gamma) \propto P(Y_i | b_i, \theta, \beta, \sigma^2_\gamma)\cdot P(b_i|\sigma^2_\gamma) \\ \propto \prod_{j=1}^{3} \bigg(\frac{\theta}{\mu_{ij}+\theta}\bigg)^{\theta}\cdot \bigg(\frac{\mu_{ij}}{\mu_{ij}+\theta}\bigg)^{y_{ij}}\cdot \exp\bigg(-\frac{b_i^2}{2\sigma^2_\gamma}\bigg) \\
+    \propto \sum_{j=1}^{3} \bigg[ (y_{ij}\log\mu_{ij}-(y_{ij}+\theta)\log(\mu_{ij}+\theta))-\frac{b_i^2}{2\sigma^2_\gamma}\bigg]
+\end{split}
+\end{equation}
+
+Here is our Metropolis Hastings Algorithm with a random walk: 
+Step 1: Let $b_i^{*}$ be generated by  $b_i^{*}= b^{(t)}+ \epsilon$, where $\epsilon\sim U(-a,a)$. And we need to do parameter tuning on $a$ to to achieve around 20%-35% acceptance rate for optimal efficiency.
+Step 2: Compute the Metropolis–Hastings ratio $R(b_i^{(t)},b_i^{*})$
+ where $$ 
+ R(b_i^{(t)},b_i^{*})=\frac{f(y_{ij}|\phi, b_i^{*})f(b^{*}|\sigma^2)}{f(y_{ij}|\phi, b_i^{(t)})f(b^{(t)}|\sigma^2)}
+ $$
+Step 3: Pick the new value for $b_i^{(t+1)}$ such that
+ $$
+ b_i^{(t+1)}=\left\{   \begin{aligned}
+    b_i^{*} &\text{with probability} \min(R(b_i^{(t)},b_i^{*}),1)   \\
+    b_i^{(t)} &\text{otherwise}.
+    \end{aligned}\right.
+ $$
+Step 4: Set t=t+1 and return to step 1
 
 
-\[Q(\theta, \beta, \sigma^2_\gamma|y, \theta^{(t)}, \beta^{(t)}, {\sigma^2_\gamma}^{(t)}) 
-=  \frac{1}{M}\sum_{i=1}^{365} \sum_{k=1}^M   \left( \sum_{j=1}^{3} \log f(y_{ij}|\mu_{ijk}^{(t)})  + \log f(b_{ik} | {\sigma^2_\gamma}^{(t)}) \right)
- \]
 
-Where $b_{ik}$ is one of the $M$ samples of the posterior distribution $b_i$ and ${ \mu_{ijk}^{(t)} = e^{ x_{ij}^T \beta^{(t)}   + b_{ik}  } }$.
-
-To sample from this distribution posterior distribution of $b_i$, we employed the metropolis hastings algorithm with a random walk. So at set $t$, for each new $b_i$, we considered $b_i^* = b_i^{(t)} + \epsilon$ where $\epsilon \sim U\left(-\frac{1}{4}, \frac{1}{4}\right)$. From this, the Metropolis Hastings ratio $R(b_i^{(t)}, b_i^*)$ was determined whether or not to accept this new $b_i^*$. For each new $b_I^*$
-
-\[R(b_i^{(t)}, b_i^*) = \frac{f(y_{ij}|\theta, \beta, \sigma^2_\gamma,b_i^*)f(b_i^* | \sigma^2_\gamma)}{f(y_{ij}|\theta, \beta, \sigma^2_\gamma,b_i^{(t)})f(b_i^{(t)} | \sigma^2_\gamma)}\]
-
-Thus, the new value for the $b_i^{(t+1)}$ is: 
-
-\begin{equation*}
-b_i^{(t+1)} = \begin{cases}
-b_i^* &\text{ with probability min$(R(b_i^{(t)},b_i^*),1)$}\\
-b_i^{(t)} &\text{ otherwise}
-\end{cases}
-\end{equation*}
 
 ```{r eval=FALSE, include=TRUE, echo=TRUE}
 glmm_fit <- MCEM_algorithm( beta_initial = c(8.3, 1.5, 1.5, -0.25, -0.50, 0, 
@@ -204,9 +184,9 @@ str(glmm_fit)
 
 Next, we applied two machine learning methods to predict the bike count. The first model we used is a conditional inference tree. In traditional partitioning, all possible splits are investigated to find the best split, which results in overfitting and selection. The conditional inference tree embeds the partition step with a permutation test, thereby enabling this method to be robust to covariates of different scales. Furthermore, it is capable of stopping when no significant correlation exists between the covariates and the response (Hothorn, Hornik, and Zeileis 2006). We emplyed the ctree funciton in the partykit to fit the conditional inference tree.
 
-We visualized the three layer conditional inference tree in order to verify the relationship between bike count and variables (Figure 2). It is apparent that people tend to rent fewer bikes between midnight and 8 am. Maximum temperatures and humidity also affect bike rental rates. The splits that are employed in the conditional reference tree provide well reasoned explanations of the data structure, which means high accuracy predictions are made.
+We visualized the three layer conditional inference tree in order to verify the relationship between bike count and variables. It is apparent that people tend to rent fewer bikes between midnight and 8 am. Maximum temperatures and humidity also affect bike rental rates. The splits that are employed in the conditional reference tree provide well reasoned explanations of the data structure, which means high accuracy predictions are made.
 
-```{r,echo=FALSE,warning=FALSE,message=FALSE,fig.width=5,fig.height=3,fig.align='center',fig.cap = "Three layer conditional inference tree"}
+```{r,echo=FALSE,warning=FALSE,message=FALSE,fig.width=5,fig.height=3,fig.align='center'}
 # conditional inference tree
 train_factor = london_train %>%
   mutate(Date=as.numeric(as.factor(Date)),
@@ -254,7 +234,7 @@ rf_fit <- train_random_forest(data = london_train)
 ```
 
 
-```{r,echo=FALSE,warning=FALSE,message=FALSE,fig.width=5,fig.height=4,fig.align='center',fig.cap='A random selected tree in the trained random forest model'}
+```{r,echo=FALSE,warning=FALSE,message=FALSE,fig.width=5,fig.height=4,fig.align='center'}
 set.seed(735)
 model1 <- randomForest(Bike_count ~ Hour_chunks + Min_temp + Max_temp + Min_humidity + Max_humidity + Wind_speed+Rain_or_snow + Is_weekend + Season + Is_holiday+Date,data = train_factor, importance=TRUE, ntree=500,mtry = 7)
 
@@ -264,18 +244,18 @@ library(reprtree)
 reprtree:::plot.getTree(model1,k=sample(1:500,1),depth=4,cex=1,font=2)
 ```
 
-Random forest sample trees share similar splits with conditional inference trees (Figure 3). The estimated bike rental count is much higher in the hour chunks that are not 0-8am. Additionally, the estimated count is high when the temperature is more than 22.25 degrees.
+Random forest sample trees share similar splits with conditional inference trees. The estimated bike rental count is much higher in the hour chunks that are not 0-8am. Additionally, the estimated count is high when the temperature is more than 22.25 degrees.
 
 ### Variable Importance in machine learning models
-To investigate which variables affect the prediction most, we calculate the importance of the variables in the conditional inference tree and the random forest. In conditional inference tree, we calculated the mean decrease in accuracy when deleting a variable (Table 1).
+To investigate which variables affect the prediction most, we calculate the importance of the variables in the conditional inference tree and the random forest. In conditional inference tree, we calculated the mean decrease in accuracy when deleting a variable.
 
 ```{r,echo=F}
-knitr::kable(ctree_mda,caption = "Mean decrease in accuracy of each variable in the conditional inferernce tree")
+knitr::kable(ctree_mda)
 ```
 
-In random forest, we calculate the increase in MSE when deleting a variable (Figure 4). The code to do this was implemented as a function `plot_rf_importance` in the `bikeSharing` R package. 
+In random forest, we calculate the increase in MSE when deleting a variable. The code to do this was implemented as a function `plot_rf_importance` in the `bikeSharing` R package. 
 
-```{r echo=TRUE, message=FALSE, warning=FALSE,fig.width=5,fig.height=4,fig.align='center',fig.cap="Feature importance in the random forest model"}
+```{r echo=TRUE, message=FALSE, warning=FALSE,fig.width=5,fig.height=4,fig.align='center'}
 plot_rf_importance(london_train)
 ```
 
