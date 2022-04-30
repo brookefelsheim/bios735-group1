@@ -11,6 +11,13 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ```{r include=FALSE}
 library(knitr)
+library(devtools)
+library(caret)
+library(tidyverse)
+library(egg)
+library(data.table)
+library(randomForest)
+library(partykit)
 ```
 
 
@@ -26,7 +33,7 @@ include_graphics("report_files/santander_bikes.jpg")
 
 Successful implementations of bike sharing programs depend on proper management of these systems. It is important for a bike sharing program to provide a stable supply of rental bikes to its population so its users feel that they can rely on the system for their transportation needs. The analysis of bike sharing data allows for a better understanding of the demand of rental bikes in a city, which, in turn, can help inform a city about how to provide appropriate supplies of rental bikes for its population.
 
-For our project, we were interested in predicting the number of bikes rented within a given bike sharing system given information about weather, time of day, and date. We were also interested in assessing the most important variables for predicting bike rental counts. Answer these questions, we fit and evaluated a negative binomial generalized mixed model and a random forest model, using data from three publicly available bike sharing demand datasets.      
+For our project, we were interested in predicting the number of bikes rented within a given bike sharing system given information about weather, time of day, and date. We were also interested in assessing the most important variables for predicting bike rental counts. To answer these questions, we fit and evaluated a negative binomial generalized mixed model, a conditional inference tree, and a random forest model, using data from three publicly available bike sharing demand datasets.      
 
 The first dataset we use is a London bike sharing demand dataset downloaded from Kaggle^[https://www.kaggle.com/datasets/hmavrodiev/london-bike-sharing-dataset] and provided by Transport for London^[https://cycling.data.tfl.gov.uk]. This dataset contains hourly bike rental count observations over two years, from Jan 04 2015 - Jan 03 2017. The first full consecutive year of data was used as the training set in the analysis, and the second full consecutive year of data was held out as a test set in the analysis.     
 
@@ -36,7 +43,9 @@ The third dataset we use is a Washington, D.C. bike sharing demand dataset downl
 
 Each dataset contained hourly observations of bike rental count data. To simplify our analysis, we chunked the hourly data into three time blocks: [0:00 - 8:00), [8:00 - 16:00), and [16:00 - 24:00). Additionally, because temperature and humidity can be correlated with time of day, we chose to use the maximum and minimum daily temperature and humidity measurements for each 8-hour data point.     
 
-There were 11 total variables that were shared among all three datasets and used to predict bike counts. Each dataset was processed such that the data units and variables were consistent across sets.
+We created an R package named `bikeSharing` that includes methods for training and evaluating the negative binomial glmm and random forest models, as well as the processed source data from all three sets.     
+
+The below code can be used to install the package and load the package library. The zipped package source data, `bikeSharing_1.0.0.tar.gz` can be found in the Github repository for our project^[https://github.com/brookefelsheim/bios735-group1].     
 
 ```{r echo=TRUE}
 if(!require("bikeSharing", quietly = TRUE))
@@ -44,14 +53,28 @@ if(!require("bikeSharing", quietly = TRUE))
 library(bikeSharing)
 ```
 
-```{r echo=TRUE}
-str(london)
+Once the package is loaded, the bike sharing data from all three sets becomes easily accessible through the variable names `london`, `seoul`, and `dc`. To directly load them into the R environment, one can simply run:      
+
+```{r}
+data("london", "seoul", "dc")
 ```
 
-```{r echo=TRUE}
-dim(seoul)
-dim(dc)
-```
+All three datasets contain bike rental count data as well as 11 additional weather-, time-, and date-related variables that were used as predictors in our models:     
+
+
+  * Hour chunk (00:00 - 8:00, 8:00-16:00, 16:00-24:00)
+  * Weekend status (Yes/No)
+  * Holiday status (Yes/No)
+  * Season (Winter, Spring, Summer, Autumn)
+  * Minimum daily temperature (C)
+  * Maximum daily temperature (C)
+  * Minimum daily humidity (%)
+  * Maximum daily humidity (%)
+  * Wind speed (m/s)
+  * Presence of any rain or snow (Yes/No)
+  * Date (mm-dd)
+
+The way that these variables are used within our models will be further described in the Methods section. For all of the analyses performed, the `london` dataset was divided into training and testing sets, where the training set contained all "Year 1" data (Jan 04 2015 - Jan 03 2016), and the testing set contained all "Year 2" data (Jan 04 2016 - Jan 03 2017).
 
 ```{r echo=TRUE}
 london_train <- london[london$Year == "Year 1",]
@@ -63,6 +86,22 @@ london_test <- london[london$Year == "Year 2",]
 
 ## Negative Binomial Generalized Linear Mixed Model
 
+```{r eval=FALSE, include=TRUE}
+glmm_fit <- MCEM_algorithm( beta_initial = c(8.3, 1.5, 1.5, -0.25, -0.50, 0, 
+                                             0, -0.25, 0, 0, 0, 0, 0, -0.25),
+                         theta_initial = 10,
+                         s2gamma_initial = 0.2,
+                         M = 1000,
+                         burn.in = 200,
+                         tol = 10^-4,
+                         maxit = 100,
+                         data = london_train
+                         )
+```
+```{r echo=TRUE}
+str(glmm_fit)
+```
+
 ## Machine learning models
 
 Next, we applied two machine learning methods to predict the bike count. The first model we used is a conditional inference tree. In traditional partitioning, all possible splits are investigated to find the best split, which results in overfitting and selection. The conditional inference tree embeds the partition step with a permutation test, thereby enabling this method to be robust to covariates of different scales. Furthermore, it is capable of stopping when no significant correlation exists between the covariates and the response (Hothorn, Hornik, and Zeileis 2006). We emplyed the ctree funciton in the partykit to fit the conditional inference tree.
@@ -70,17 +109,6 @@ Next, we applied two machine learning methods to predict the bike count. The fir
 We visualized the three layer conditional inference tree in order to verify the relationship between bike count and variables. It is apparent that people tend to rent fewer bikes between midnight and 8 am. Maximum temperatures and humidity also affect bike rental rates. The splits that are employed in the conditional reference tree provide well reasoned explanations of the data structure, which means high accuracy predictions are made.
 
 ```{r,echo=FALSE,warning=FALSE,message=FALSE,fig.width=5,fig.height=3,fig.align='center'}
-library(devtools)
-load_all("/Users/chenjiawen/Documents/Github/bios735-group1/package/bikeSharing")
-london_train <- london[london$Year == "Year 1",]
-london_test <- london[london$Year == "Year 2",]
-library(caret)
-library(ggplot2)
-library(tidyverse)
-library(egg)
-library(data.table)
-library(randomForest)
-library(partykit)
 # conditional inference tree
 train_factor = london_train %>%
   mutate(Date=as.numeric(as.factor(Date)),
@@ -120,15 +148,18 @@ setorder(ctree_mda,-mda)
 colnames(ctree_mda)=c("Variable","Mean decrease in accuracy")
 ```
 
-A random forest model was then applied to predict the number of bikes that would be rented. Random forest is composed of many decision trees as opposed to a single tree, resulting in a more accurate result. Incorporating the randomness allows random forest to protect against overfitting and can be applied more effectively to other data sets. The disadvantage of the random forest is its computational complexity. To fit the random forest, we used the train function within the carest package. The optimal tuning parameter mtry was determined using a 5-fold cross validation. We visualized a random selected tree. 
+A random forest model was then applied to predict the number of bikes that would be rented. Random forest is composed of many decision trees as opposed to a single tree, resulting in a more accurate result. Incorporating the randomness allows random forest to protect against overfitting and can be applied more effectively to other data sets. The disadvantage of the random forest is its computational complexity. To fit the random forest, we created a method `train_random_forest()` within our `bikeSharing` R package that leverages the the `train()` function within the `caret` R package. The optimal tuning parameter mtry was determined using a 5-fold cross validation. We visualized a random selected tree. 
+
+```{r}
+set.seed(735)
+```
+
+```{r echo = TRUE}
+rf_fit <- train_random_forest(data = london_train)
+```
+
 
 ```{r,echo=FALSE,warning=FALSE,message=FALSE,fig.width=5,fig.height=4,fig.align='center'}
-x = train_factor %>%dplyr::select(-Year,-Bike_count)
-##y=unlist(seoul_data%>%%>%select(Bike_count))
-y= unlist(train_factor%>% ungroup()%>%dplyr::select(Bike_count)) ## I had to add ungroup() for this to work on my 
-set.seed(735)
-trCtl <- trainControl(method="cv", number=5, savePredictions=TRUE)
-rf_fit <- train_random_forest(data = london_train)
 set.seed(735)
 model1 <- randomForest(Bike_count ~ Hour_chunks + Min_temp + Max_temp + Min_humidity + Max_humidity + Wind_speed+Rain_or_snow + Is_weekend + Season + Is_holiday+Date,data = train_factor, importance=TRUE, ntree=500,mtry = 7)
 reprtree:::plot.getTree(model1,k=sample(1:500,1),depth=4,cex=1,font=2)
@@ -143,9 +174,9 @@ To investigate which variables affect the prediction most, we calculate the impo
 knitr::kable(ctree_mda)
 ```
 
-In random forest, we calculte the increase in MSE when deleting a variable.
+In random forest, we calculate the increase in MSE when deleting a variable. The code to do this was implemented as a function `plot_rf_importance` in the `bikeSharing` R package. 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE,fig.width=5,fig.height=4,fig.align='center'}
+```{r echo=TRUE, message=FALSE, warning=FALSE,fig.width=5,fig.height=4,fig.align='center'}
 plot_rf_importance(london_train)
 ```
 
@@ -155,22 +186,6 @@ The top important variables of the conditional inference tree and random forest 
 
 # Results 
 
-## Negative Binomial Generalized Linear Mixed Model
-```{r eval=FALSE, include=TRUE}
-glmm_fit <- MCEM_algorithm( beta_initial = c(8.3, 1.5, 1.5, -0.25, -0.50, 0, 
-                                             0, -0.25, 0, 0, 0, 0, 0, -0.25),
-                         theta_initial = 10,
-                         s2gamma_initial = 0.2,
-                         M = 1000,
-                         burn.in = 200,
-                         tol = 10^-4,
-                         maxit = 100,
-                         data = london_train
-                         )
-```
-```{r echo=TRUE}
-str(glmm_fit)
-```
 ```{r echo=TRUE}
 glmm_model_fit(glmm_fit, london_train, scale_to_reference_mean = "no", 
                reference = london)
@@ -182,16 +197,6 @@ glmm_model_fit(glmm_fit, seoul, scale_to_reference_mean = "yes",
                reference = london)
 ```
 
-
-## Random Forest
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-rf_fit <- train_random_forest(data = london_train)
-rf_fit
-```
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-plot_rf_importance(london_train)
-```
 
 ```{r echo=TRUE}
 rf_model_fit(rf_fit, london_train, scale_to_reference_mean = "no", 
