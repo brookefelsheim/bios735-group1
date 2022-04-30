@@ -236,7 +236,7 @@ rf_fit <- train_random_forest(data = london_train)
 ```
 
 
-```{r,echo=FALSE,warning=FALSE,message=FALSE,fig.width=5,fig.height=4,fig.align='center'}
+```{r,echo=FALSE,warning=FALSE,message=FALSE,fig.width=5,fig.height=4,fig.align='center',fig.cap="A random selected tree in the trained random forest model"}
 set.seed(735)
 model1 <- randomForest(Bike_count ~ Hour_chunks + Min_temp + Max_temp + Min_humidity + Max_humidity + Wind_speed+Rain_or_snow + Is_weekend + Season + Is_holiday+Date,data = train_factor, importance=TRUE, ntree=500,mtry = 7)
 
@@ -246,16 +246,16 @@ library(reprtree)
 reprtree:::plot.getTree(model1,k=sample(1:500,1),depth=4,cex=1,font=2)
 ```
 
-Random forest sample trees share similar splits with conditional inference trees. The estimated bike rental count is much higher in the hour chunks that are not 0-8am. Additionally, the estimated count is high when the temperature is more than 22.25 degrees.
+Random forest sample trees share similar splits with conditional inference trees (Figure 3). The estimated bike rental count is much higher in the hour chunks that are not 0-8am. Additionally, the estimated count is high when the temperature is more than 22.25 degrees.
 
 ### Variable Importance in machine learning models
-To investigate which variables affect the prediction most, we calculate the importance of the variables in the conditional inference tree and the random forest. In conditional inference tree, we calculated the mean decrease in accuracy when deleting a variable.
+To investigate which variables affect the prediction most, we calculate the importance of the variables in the conditional inference tree and the random forest. In conditional inference tree, we calculated the mean decrease in accuracy when deleting a variable (Table 1).
 
 ```{r,echo=F}
 knitr::kable(ctree_mda,caption = "Mean decrease in accuracy of variables in the conditional inference tree")
 ```
 
-In random forest, we calculate the increase in MSE when deleting a variable. The code to do this was implemented as a function `plot_rf_importance` in the `bikeSharing` R package. 
+In random forest, we calculate the increase in MSE when deleting a variable (Figure 4). The code to do this was implemented as a function `plot_rf_importance` in the `bikeSharing` R package. 
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE,fig.width=5,fig.height=4,fig.align='center',fig.cap="Feature importance in the random forest model"}
 plot_rf_importance(london_train)
