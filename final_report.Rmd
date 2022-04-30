@@ -1,7 +1,7 @@
 ---
 title: "Final Report"
 author: "Group 1: Jiawen Chen, Brooke Felsheim, Elena Kharitonova, Xinjie Qian, and Jairui Tang"
-date: "4/29/2022"
+date: "4/30/2022"
 output: pdf_document
 ---
 
@@ -35,11 +35,11 @@ Successful implementations of bike sharing programs depend on proper management 
 
 For our project, we were interested in predicting the number of bikes rented within a given bike sharing system given information about weather, time of day, and date. We were also interested in assessing the most important variables for predicting bike rental counts. To answer these questions, we fit and evaluated a negative binomial generalized mixed model, a conditional inference tree, and a random forest model, using data from three publicly available bike sharing demand datasets.      
 
-The first dataset we use is a London bike sharing demand dataset downloaded from Kaggle^[https://www.kaggle.com/datasets/hmavrodiev/london-bike-sharing-dataset] and provided by Transport for London^[https://cycling.data.tfl.gov.uk]. This dataset contains hourly bike rental count observations over two years, from Jan 04 2015 - Jan 03 2017. The first full consecutive year of data was used as the training set in the analysis, and the second full consecutive year of data was held out as a test set in the analysis.     
+The first dataset we use is a London bike sharing demand dataset downloaded from Kaggle^[https://www.kaggle.com/datasets/hmavrodiev/london-bike-sharing-dataset] and provided by Transport for London^[https://cycling.data.tfl.gov.uk]. This dataset contains hourly bike rental count observations over two years, from Jan 04 2015 - Jan 03 2017. The first full consecutive year of data was used as the training set in the analysis, and the second full consecutive year of data was held out as a test set.     
 
-The second dataset we use is a Seoul bike sharing demand dataset downloaded from the UCI Machine Learning Repository^[https://archive.ics.uci.edu/ml/datasets/Seoul+Bike+Sharing+Demand] and provided by the Seoul Metropolitan Government^[https://data.seoul.go.kr]. This dataset contains hourly bike rental counts over one year, from Dec 1 2017 - Nov 30 2018. This was used as an independent test set in the analysis.     
+The second dataset we use is a Seoul bike sharing demand dataset downloaded from the UCI Machine Learning Repository^[https://archive.ics.uci.edu/ml/datasets/Seoul+Bike+Sharing+Demand] and provided by the Seoul Metropolitan Government^[https://data.seoul.go.kr]. This dataset contains hourly bike rental counts over one year, from Dec 1 2017 - Nov 30 2018. This was used as an independent test set.     
 
-The third dataset we use is a Washington, D.C. bike sharing demand dataset downloaded from Kaggle^[https://www.kaggle.com/datasets/marklvl/bike-sharing-dataset] and provided by Capital Bikeshare^[https://ride.capitalbikeshare.com/system-data]. This dataset contains hourly bike rental counts over two years, from Jan 01 2011 - Dec 31 2012. This was used as an independent test set in the analysis.     
+The third dataset we use is a Washington, D.C. bike sharing demand dataset downloaded from Kaggle^[https://www.kaggle.com/datasets/marklvl/bike-sharing-dataset] and provided by Capital Bikeshare^[https://ride.capitalbikeshare.com/system-data]. This dataset contains hourly bike rental counts over two years, from Jan 01 2011 - Dec 31 2012. This was used as an independent test set.     
 
 Each dataset contained hourly observations of bike rental count data. To simplify our analysis, we chunked the hourly data into three time blocks: [0:00 - 8:00), [8:00 - 16:00), and [16:00 - 24:00). Additionally, because temperature and humidity can be correlated with time of day, we chose to use the maximum and minimum daily temperature and humidity measurements for each 8-hour data point.     
 
@@ -55,7 +55,7 @@ library(bikeSharing)
 
 Once the package is loaded, the bike sharing data from all three sets becomes easily accessible through the variable names `london`, `seoul`, and `dc`. To directly load them into the R environment, one can simply run:      
 
-```{r}
+```{r echo=TRUE}
 data("london", "seoul", "dc")
 ```
 
@@ -86,7 +86,7 @@ london_test <- london[london$Year == "Year 2",]
 
 ## Negative Binomial Generalized Linear Mixed Model
 
-```{r eval=FALSE, include=TRUE}
+```{r eval=FALSE, include=TRUE, echo=TRUE}
 glmm_fit <- MCEM_algorithm( beta_initial = c(8.3, 1.5, 1.5, -0.25, -0.50, 0, 
                                              0, -0.25, 0, 0, 0, 0, 0, -0.25),
                          theta_initial = 10,
