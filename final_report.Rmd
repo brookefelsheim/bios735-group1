@@ -200,6 +200,9 @@ glmm_fit <- MCEM_algorithm( beta_initial = c(8.3, 1.5, 1.5, -0.25, -0.50, 0,
                          )
 ```
 
+```{r engine='bash', comment=''}
+cat report_files/london_cat_output.txt
+```
 
 ```{r echo=TRUE}
 str(glmm_fit)
