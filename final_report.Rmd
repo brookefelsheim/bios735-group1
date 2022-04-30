@@ -91,7 +91,7 @@ scale_seoul = mean(seoul$Bike_count)/
   mean(london$Bike_count)
 scale_dc = mean(dc$Bike_count)/
   mean(london$Bike_count)
-seoul$Bike_count2 = seoul$Bike_count 
+seoul$Bike_count2 = seoul$Bike_count / scale_seoul
 london_test$Bike_count2 = london_test$Bike_count 
 london_train$Bike_count2 = london_train$Bike_count 
 dc$Bike_count2 = dc$Bike_count / scale_dc
