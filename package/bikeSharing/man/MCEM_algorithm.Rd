@@ -5,38 +5,38 @@
 \title{Run MCEM algorithm to estimate NB GLMM bike count parameters}
 \usage{
 MCEM_algorithm(
-  beta_initial = c(7.49, 0.8, 1.06, -0.15, -0.23, -0.3, -0.18, -0.72, -0.01, 0.05, 0,
-    0, 0.01, -0.48),
-  theta_initial = 4.542,
+  data,
+  beta_initial = c(8.3, 1.5, 1.5, -0.25, -0.5, 0, 0, -0.25, 0, 0, 0, 0, 0, -0.25),
+  theta_initial = 10,
   s2gamma_initial = 0.2,
   M = 1000,
   burn.in = 200,
-  tol = 10^-5,
+  tol = 10^-4,
   maxit = 100,
-  data = seoul,
   trace = 0
 )
 }
 \arguments{
-\item{beta_initial}{initial beta values}
-
-\item{s2gamma_initial}{initial value for s2gamma}
-
-\item{M}{length of chain}
-
-\item{burn.in}{the number of beginning iteration samples to discard}
-
-\item{tol}{tolerance for convergence}
-
-\item{maxit}{maximum number of iterations to run}
-
 \item{data}{pre-processed bike sharing data frame
 with columns Bike_count, Hour_chunks,
 Max_temp, Rain_or_snow, and Date}
 
-\item{trace}{level of detailed output}
+\item{beta_initial}{initial beta values (vector of 14 numeric values)}
 
-\item{theta_inital}{initial theta value}
+\item{theta_initial}{initial theta value (single numeric value)}
+
+\item{s2gamma_initial}{initial value for s2gamma (single numeric value)}
+
+\item{M}{length of chain (single numeric count value)}
+
+\item{burn.in}{the number of beginning iteration samples to discard
+(single numeric count value)}
+
+\item{tol}{tolerance for convergence (single numeric value)}
+
+\item{maxit}{maximum number of iterations to run (single numeric count value)}
+
+\item{trace}{level of detailed output (single numeric value)}
 }
 \value{
 a list containing beta, theta, s2gamma, qfunction, and date random

@@ -2,10 +2,14 @@
 % Please edit documentation in R/negativeBinomialGLMM.R
 \name{r.walk}
 \alias{r.walk}
-\title{Helper function to perform random walk}
+\title{Perform random walk}
 \usage{
 r.walk()
 }
+\value{
+sampled random value
+}
 \description{
-Helper function to perform random walk
+This helper function performs a random walk, drawing a
+sample from a uniform distribution between -1/4 and 1/4
 }

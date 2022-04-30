@@ -8,38 +8,45 @@
 #' to draw samples of the random effect and the Nelder-Mead algorithm is used
 #' to calculate the M-step.
 #'
-#' @param beta_initial initial beta values
-#' @param theta_inital initial theta value
-#' @param s2gamma_initial initial value for s2gamma
-#' @param M length of chain
-#' @param burn.in the number of beginning iteration samples to discard
-#' @param tol tolerance for convergence
-#' @param maxit maximum number of iterations to run
 #' @param data pre-processed bike sharing data frame
 #'             with columns Bike_count, Hour_chunks,
 #'             Max_temp, Rain_or_snow, and Date
-#' @param trace level of detailed output
+#' @param beta_initial initial beta values (vector of 14 numeric values)
+#' @param theta_initial initial theta value (single numeric value)
+#' @param s2gamma_initial initial value for s2gamma (single numeric value)
+#' @param M length of chain (single numeric count value)
+#' @param burn.in the number of beginning iteration samples to discard
+#'                (single numeric count value)
+#' @param tol tolerance for convergence (single numeric value)
+#' @param maxit maximum number of iterations to run (single numeric count value)
+#' @param trace level of detailed output (single numeric value)
 #'
 #' @return a list containing beta, theta, s2gamma, qfunction, and date random
 #'         effect estimates, as well as epsilon and the iteration count
 #'
 #' @import data.table
+#' @import stats
 #' @importFrom optimx optimx
-#' @importFrom stats model.matrix
 #'
 #' @export
 MCEM_algorithm = function(
-  beta_initial = c(7.49, 0.8, 1.06, -0.15, -0.23, -0.3, -0.18, -0.72,
-                   -0.01, 0.05, 0, 0, 0.01, -0.48),
-  theta_initial = 4.542,
+  data,
+  beta_initial = c(8.3, 1.5, 1.5, -0.25, -0.50, 0,
+                   0, -0.25, 0, 0, 0, 0, 0, -0.25),
+  theta_initial = 10,
   s2gamma_initial = 0.2,
   M = 1000,
   burn.in = 200,
-  tol = 10^-5,
+  tol = 10^-4,
   maxit = 100,
-  data = seoul,
-  trace  = 0
+  trace = 0
 ) {
+
+  checkBikeData(data)
+
+  checkParamsMCEM(beta_initial = beta_initial, theta_initial = theta_initial,
+                  s2gamma_initial = s2gamma_initial, M = M, burn.in = burn.in,
+                  tol = tol, maxit = maxit, trace = trace)
 
   tol = tol
   maxit = maxit
@@ -58,9 +65,9 @@ MCEM_algorithm = function(
   # burn in
   burn.in = burn.in
 
-  seoul = data.table(data)
+  data_table = data.table(data)
 
-  n = length(unique(seoul$Date))
+  n = length(unique(data_table$Date))
 
 
   while(eps > tol & iter < maxit){
@@ -70,7 +77,7 @@ MCEM_algorithm = function(
     ## Begin E-step
 
     samples = sample.gamma.posterior.all(
-      data = seoul,
+      data = data_table,
       M = M,
       maxit = maxit * M,
       thetat = theta,
@@ -79,7 +86,7 @@ MCEM_algorithm = function(
       trace = trace
     )
 
-    qfunction = Q(data = seoul,
+    qfunction = Q(data = data_table,
                   thetat = theta,
                   betat = beta,
                   s2gammat = s2gamma,
@@ -96,7 +103,7 @@ MCEM_algorithm = function(
       par = c(beta, theta, log(s2gamma)),
       # Q function wrapper
       fn = function(x, data, samples){
-        Q(data = seoul,
+        Q(data = data_table,
           betat = x[1:length(beta)],
           thetat = x[length(beta)+1],
           s2gammat = x[length(beta)+2],
@@ -149,17 +156,50 @@ MCEM_algorithm = function(
 
 }
 
-#' Helper function to perform random walk
+#' Perform random walk
+#'
+#' This helper function performs a random walk, drawing a
+#' sample from a uniform distribution between -1/4 and 1/4
+#'
+#' @return sampled random value
+#'
+#' @import stats
+#'
 r.walk = function(){
   runif(1,-1/4,1/4)
 }
 
-#' Helper function that adds prior u to random walk
+#' Add prior u to random walk
+#'
+#' This helper function simulates a sample from the proposal
+#' density g, which is the prior plus the value from a random walk
+#'
+#' @param u prior
+#'
+#' @return u + sampled random walk value
+#'
 g.sim = function(u){
   u + r.walk()
 }
 
-#' Helper function to run random walk sampler for subject i
+#' Run random walk sampler for unique date i
+#'
+#' This helper function runs the random walk sampler for
+#' a single unique date i
+#'
+#' @param yi a vector containing the bike counts observations for date i
+#' @param xi a matrix containing the predictor variable observations for date i
+#' @param M chain length
+#' @param maxit the maximum number of iterations
+#' @param thetat the estimate for theta at EM iteration t
+#' @param betat the estimate for beta at EM iteration t
+#' @param s2gammat the estimate for s2gammat at EM iteration t
+#' @param trace level of detailed output
+#'
+#' @return gammai, list of random chain results for date i
+#'
+#' @import stats
+#'
 sample.gamma.posterior.i = function(yi, xi, M, maxit, thetat, betat, s2gammat,
                                     trace = 0) {
 
@@ -200,7 +240,23 @@ sample.gamma.posterior.i = function(yi, xi, M, maxit, thetat, betat, s2gammat,
   return(list(gammai = gammai))
 }
 
-#' Helper function to draw M samples from the posterior for gammai
+#' Run random walk sampler for all unique dates
+#'
+#' This helper function runs the random walk sampler for
+#' all unique dates
+#'
+#' @param data a data table containing bike sharing data
+#' @param M chain length
+#' @param maxit the maximum number of iterations
+#' @param thetat the estimate for theta at EM iteration t
+#' @param betat the estimate for beta at EM iteration t
+#' @param s2gammat the estimate for s2gammat at EM iteration t
+#' @param trace level of detailed output
+#'
+#' @return list containing random chain results
+#'
+#' @import stats
+#'
 sample.gamma.posterior.all = function(data,
                                       M,
                                       maxit,
@@ -221,6 +277,8 @@ sample.gamma.posterior.all = function(data,
   for (i in 1:n) {
 
     if(trace > 0) print(i)
+
+    Bike_count <- NULL # bind to object to avoid global variable warning
 
     # draw M samples from the posterior for gamma_i
     samples.i =
@@ -245,7 +303,23 @@ sample.gamma.posterior.all = function(data,
   return(samples)
 }
 
-#' Helper function to calculate the Q-function for the ith subject
+#' Calculate the Q-function for the unique date i
+#'
+#' This is a helper function that calculates the Q-function for
+#' the unique date i
+#'
+#' @param yi a vector containing the bike counts observations for date i
+#' @param xi a matrix containing the predictor variable observations for date i
+#' @param thetat the estimate for theta at EM iteration t
+#' @param betat the estimate for beta at EM iteration t
+#' @param s2gammat the estimate for s2gammat at EM iteration t
+#' @param gammai list of random chain results for date i
+#' @param burn_in iterations to discard for burn_in
+#'
+#' @return q function values for i
+#'
+#' @import stats
+#'
 Qi = function(yi,
               xi,
               thetat,
@@ -279,9 +353,24 @@ Qi = function(yi,
   return(qi)
 }
 
-#' Helper function for calculating the Q-function
+#' Calculate the Q-function for all unique dates
 #'
-#' @importFrom stats model.matrix
+#' This is a helper function that calculates the Q-function for
+#' all unique dates
+#'
+#' @param data a data table containing bike sharing data
+#' @param thetat the estimate for theta at EM iteration t
+#' @param betat the estimate for beta at EM iteration t
+#' @param s2gammat the estimate for s2gammat at EM iteration t
+#' @param samples samples from random walk sampler
+#' @param burn_in iterations to discard for burn_in
+#' @param logs2gammat indicates whether s2gammat is initially passed on
+#'                    the log scale
+#'
+#' @return q function values
+#'
+#' @import stats
+#'
 Q = function(data,
              thetat,
              betat,
@@ -290,7 +379,7 @@ Q = function(data,
              burn_in,
              logs2gammat = F) {
 
-  # backtranform if maximizing s2gammat on log scale
+  # backtransform if maximizing s2gammat on log scale
   if (logs2gammat == T) {
     s2gammat = exp(s2gammat)
   }
@@ -307,6 +396,7 @@ Q = function(data,
 
   # loop over subjects
   for (i in 1:length(unique_date)) {
+    Bike_count <- NULL # bind to object to avoid global variable warning
     Q = Q + Qi(yi = data[data$Date == unique_date[i], Bike_count],
                xi =  X[data$Date == unique_date[i],],
                thetat = thetat,

@@ -54,6 +54,7 @@ train_random_forest <- function(data) {
 #' @importFrom data.table setorder
 #' @importFrom ggrepel geom_label_repel
 #' @importFrom egg theme_article
+#' @importFrom rlang .data
 #'
 #' @export
 plot_rf_importance <- function(data, mtry = 11) {
@@ -63,13 +64,15 @@ plot_rf_importance <- function(data, mtry = 11) {
   model <- randomForest(Bike_count ~ Hour_chunks + Is_weekend + Is_holiday +
                           Season + Min_temp + Max_temp + Min_humidity +
                           Max_humidity + Wind_speed + Rain_or_snow + Date,
-                         data = data, importance = TRUE, ntree = 500, mtry = mtry)
+                         data = data, importance = TRUE, ntree = 500,
+                        mtry = mtry)
 
 
   importance_matrix <- model$importance %>% as.data.frame(check.names = F)
-  setorder(importance_matrix, -`%IncMSE`)
+  setorder(importance_matrix, -"%IncMSE")
 
-  g <- ggplot(importance_matrix,aes(x =`%IncMSE`, y = IncNodePurity)) +
+  g <- ggplot(importance_matrix, aes(x =.data$`%IncMSE`,
+                                     y = .data$IncNodePurity)) +
     geom_point(color = "grey30", alpha = 0.7) +
     theme_article() +
     ggrepel::geom_label_repel(label = c(rownames(importance_matrix)[1:5],
