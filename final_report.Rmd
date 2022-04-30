@@ -157,9 +157,9 @@ Step 3: Pick the new value for $b_i^{(t+1)}$ such that
     b_i^{(t)} &\text{otherwise}.
     \end{aligned}\right.
  $$
-Step 4: Set t=t+1 and return to step 1
+Step 4: Set t=t+1 and return to step 1.
 
-
+Also we will use Nelder-Mead in the M-step because it does not require 1st or 2nd derivatives and it is robust.
 
 
 ```{r eval=FALSE, include=TRUE, echo=TRUE}
@@ -179,6 +179,8 @@ glmm_fit <- MCEM_algorithm( beta_initial = c(8.3, 1.5, 1.5, -0.25, -0.50, 0,
 ```{r echo=TRUE}
 str(glmm_fit)
 ```
+
+
 
 ## Machine learning models
 
