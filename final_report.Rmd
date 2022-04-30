@@ -237,11 +237,15 @@ mean(london_train$Bike_count)
 ```
 
 
-# Discussion
+# Discussion and Conclusion
 
-Below si the plot
+In conclusion, factors including hours, holidays, min temperature, max temperature, min humidity, max humidity, average wind speed and presence of rain/snow all have inference on the number of bike rented in the three cities. Hours from 4pm to midnight have the largest effect on the number of bike rented. Hours from 8am to 4pm, winter season, rain/snow also have large impact on the bike rent count. Random Forest have better prediction result on all the training and testing data, compared to the results of GLMM.
 
-```{r echo=TRUE}
+In addition to the conclusion above, we also have some findings that need to discuss more. The RMSE for Seoul is much larger than that in the other two cities. The results on the test dataset are much worse than in the training dataset. This may imply that our model may have some limitations across cities. The possible reason is that in our model, we only considered the effects of days, hours and weather on the bike count but did not take information about cities into consideration (e.g. population, GDP), which may cause bias in prediction.
+
+To get a better understanding on how our model predict on the sequences of bike count in different dataset, we plotted out the predicted bike count and the ground truth for each of the four datasets. Below is the longitudinal plots of the predicted bike count and the true bike count in the three cities.
+
+```{r,include=FALSE}
 # function to output the prediction results
 get_prediction = function(model_glmm=output,data,scale_data=FALSE) {
   data = data[data$Date %in% london$Date,]
@@ -264,67 +268,108 @@ get_prediction = function(model_glmm=output,data,scale_data=FALSE) {
 }
 ```
 
-```{r echo=TRUE}
+```{r,include=FALSE}
 load("londonoutput_M1000.Rdata")
 model_glmm = output
+
 df_seoul = get_prediction(model_glmm=model_glmm,data=seoul,scale_data=TRUE)
+
 df_london_train = get_prediction(model_glmm=model_glmm,data=london_train,scale_data=FALSE)
+
 df_london_test = get_prediction(model_glmm=model_glmm,data=london_test,scale_data=FALSE)
+
 df_dc = get_prediction(model_glmm=model_glmm,data=dc,scale_data=TRUE)
 ```
 
-```{r, warning=FALSE,fig.align='center'}
+```{r, warning=FALSE,fig.align='center',message=FALSE}
+#install.packages("ggpubr")
+library(ggpubr)
 library(ggplot2)
-par(mfrow = c(2, 2))
-ggplot(data = df_seoul,aes(index))+geom_point(aes(y=pred))+geom_line(aes(y=pred))+
-  geom_point(aes(y=true),color = "red",alpha=0.4)+geom_line(aes(y=true),color = "red",alpha=0.4)+
-  labs(title = "Bike Count in Seoul Pred (black) vs True") + ylim(0,35000)
-ggplot(data = df_london_train,aes(index))+geom_point(aes(y=pred))+geom_line(aes(y=pred))+
-  geom_point(aes(y=true),color = "red",alpha=0.4)+geom_line(aes(y=true),color = "red",alpha=0.4)+
-  labs(title = "Bike Count in London Train Pred (black) vs True")+ ylim(0,35000)
-ggplot(data = df_london_test,aes(index))+geom_point(aes(y=pred))+geom_line(aes(y=pred))+
-  geom_point(aes(y=true),color = "red",alpha=0.4)+geom_line(aes(y=true),color = "red",alpha=0.4)+
-  labs(title = "Bike Count in London Test Pred (black) vs True")+ ylim(0,35000)
-ggplot(data = df_dc,aes(index))+geom_point(aes(y=pred))+geom_line(aes(y=pred))+
-  geom_point(aes(y=true),color = "red",alpha=0.4)+geom_line(aes(y=true),color = "red",alpha=0.4)+
-  labs(title = "Bike Count in DC Pred (black) vs True")+ ylim(0,35000)
+p1=
+  ggplot(data = df_seoul,aes(index))+geom_point(aes(y=pred),size=0.2)+geom_line(aes(y=pred),size=0.2)+
+  geom_point(aes(y=true),color = "red",alpha=0.4,size=0.2)+geom_line(aes(y=true),color = "red",alpha=0.5,size=0.1)+
+  ggtitle("Bike Count in Seoul Pred (black) vs True") + ylim(0,35000) +xlab("Time Index")+
+  theme(plot.title=element_text(size=8))
+
+p2=
+  ggplot(data = df_london_train,aes(index))+geom_point(aes(y=pred),size=0.2)+geom_line(aes(y=pred),size=0.2)+
+  geom_point(aes(y=true),color = "red",alpha=0.4,size=0.2)+geom_line(aes(y=true),color = "red",alpha=0.5,size=0.1)+
+  ggtitle("Bike Count in London Train Pred (black) vs True")+ ylim(0,35000)+xlab("Time Index")+
+  theme(plot.title=element_text(size=8))
+
+p3=
+  ggplot(data = df_london_test,aes(index))+geom_point(aes(y=pred),size=0.2)+geom_line(aes(y=pred),size=0.2)+
+  geom_point(aes(y=true),color = "red",alpha=0.4,size=0.2)+geom_line(aes(y=true),color = "red",alpha=0.5,size=0.1)+
+  ggtitle("Bike Count in London Test Pred (black) vs True")+ ylim(0,35000)+xlab("Time Index")+
+  theme(plot.title=element_text(size=8))
+
+p4=
+  ggplot(data = df_dc,aes(index))+geom_point(aes(y=pred),size=0.2)+geom_line(aes(y=pred),size=0.2)+
+  geom_point(aes(y=true),color = "red",alpha=0.4,size=0.2)+geom_line(aes(y=true),color = "red",alpha=0.5,size=0.1)+
+  ggtitle("Bike Count in DC Pred (black) vs True")+ ylim(0,35000)+xlab("Time Index")+
+  theme(plot.title=element_text(size=8))
+ggarrange(p1, p2, p3, p4, 
+          labels = c("A", "B", "C","D"),
+          ncol = 2, nrow = 2)
 #dev.off()
+
 ```
 
-```{r}
+To understand the bias and variance of our prediction results, we also drew the boxplots of predicted bike count and the true bike count of the four datasets. The plots are shown below:
+
+```{r, warning=FALSE,fig.align='center'}
 library(tidyverse)
 library(dplyr)
-boxplot_seoul = df1 %>% 
+boxplot_seoul = df_seoul %>% 
   pivot_longer(
     cols = c("pred", "true"), 
     names_to = "label", 
     values_to = "value"
   )
-ggplot(data = boxplot_seoul,aes(x = label, y = value)) +geom_boxplot() + ylim(0,35000)
-boxplot_london = df2 %>% 
+p1 = ggplot(data = boxplot_seoul,aes(x = label, y = value)) +geom_boxplot()+ylim(0,35000)+
+  ggtitle("Bike Count Boxplot in Seoul Pred (left) vs True")+ylab("Bike Count")+
+  theme(plot.title=element_text(size=8))
+
+boxplot_london_train = df_london_train %>% 
   pivot_longer(
     cols = c("pred", "true"), 
     names_to = "label", 
     values_to = "value"
   )
-ggplot(data = boxplot_london,aes(x = label, y = value)) +geom_boxplot() + ylim(0,35000)
-mean((df1$pred-df1$true)^2)
-mean((df2$pred-df2$true)^2)
-mean((df3$pred-df3$true)^2)
-# Bias
-mean(df1$pred)-mean(df1$true)
-sd(df1$pred)
-boxplot_dc = df3 %>% 
+p2=ggplot(data = boxplot_london_train,aes(x = label, y = value)) +geom_boxplot() + ylim(0,35000)+
+  ggtitle("Bike Count Boxplot in London Train Pred (left) vs True")+ylab("Bike Count")+
+  theme(plot.title=element_text(size=8))
+
+boxplot_london_test = df_london_test %>% 
   pivot_longer(
     cols = c("pred", "true"), 
     names_to = "label", 
     values_to = "value"
   )
-ggplot(data = boxplot_dc,aes(x = label, y = value)) +geom_boxplot() + ylim(0,35000)
+p3=ggplot(data = boxplot_london_test,aes(x = label, y = value)) +geom_boxplot() + ylim(0,35000)+
+  ggtitle("Bike Count Boxplot in London Test Pred (left) vs True")+ylab("Bike Count")+
+  theme(plot.title=element_text(size=8))
+
+boxplot_dc = df_dc %>% 
+  pivot_longer(
+    cols = c("pred", "true"), 
+    names_to = "label", 
+    values_to = "value"
+  )
+p4=ggplot(data = boxplot_dc,aes(x = label, y = value)) +geom_boxplot() + ylim(0,35000)+
+  ggtitle("Bike Count Boxplot in DC Test Pred (left) vs True")+ylab("Bike Count")+
+  theme(plot.title=element_text(size=8))
+ggarrange(p1, p2, p3, p4, 
+          labels = c("A", "B", "C","D"),
+          ncol = 2, nrow = 2)
 ```
+
+Overall, our result is consistent with the published research by Sylwia et al. (2021) in "Impact of environment on bicycle travel demand-Assessment using bikeshare system data". In their study, they used the data from the bike sharing system in Cracow, Polan and conducted an ordinal least square regression model to analyze the effect of daily air temperature, daily rainfall, public holidays, and school holidays on the daily number of bike rented from bike sharing system. Their study result indicated that weather conditions, especially air temperature and daily rainfall, have large impact on the number of bike sharing system, which is consistent with ours result. Compared to their research, our study further found that the maximum temperature and the minimum humidity have more impact on the bike count. We did not restrict our study on daily level but cut one day into different hour chunks and found that different hour chunks in one day can also have large effect on the number of bike rented from bike sharing system.
 
 
 # Reference
 Hothorn T, Hornik K, Zeileis A (2006). “Unbiased Recursive Partitioning: A Conditional
 Inference Framework.” Journal of Computational and Graphical Statistics, 15(3), 651–674.
 doi:10.1198/106186006X133933.
+
+Sylwia P., Mariusz K., Carmelo D (2021). "Impact of environment on bicycle travel demand—Assessment using bikeshare system data." Sustainable Cities and Society, 67, [102724]. https://doi.org/10.1016/j.scs.2021.102724
