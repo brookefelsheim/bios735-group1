@@ -292,20 +292,38 @@ The top important variables of the conditional inference tree and random forest 
 
 # Results 
 
+In order to assess the accuracy of the models, the models were used to predict the values of bike counts for for the London (training set), London (test set), Seoul, and DC data sets. The predicted values were compared to the actual values to determine how well the model predicted the bike counts for a city on a given day and time. 
+
+Three metrics of accuracy were calculate: Root Mean Squared Error (RMSE), Mean Absolute Error (MAE), and Coeeficient fo Determination ($R^2$). They were calculated using the following formulas.
+
+* RMSE = $\sqrt{\frac{1}{N}\sum_{i=1}^N(y_i -\hat{y_i})^2}$
+* MAE = $\frac{1}{N}\sum_{i=1}^N|y_i -\hat{y_i}|$
+* ${ R^2  = 1 - \frac{\sum_{i=1}^N(y_i -\hat{y_i})^2}{\sum_{i=1}^N(y_i -\bar{y_i})^2}}$
+
+Since Seoul and DC have a different population size than London, it is posible that the predicted value based on the trained london data set and the actual bike count may be on different scale. In order to account for this, the predicted values for the Seoul and DC data sets were scaled by $\frac{\textrm{Average Bike Count of City}}{\textrm{Average Bike Count of London}}$, so that the predicted value for DC and Seoul would be on the same sclae as the actual observed bike counts. 
+
+This assessment of model fit for the GLMM model was wrapped into the function `glmm_model_fit()`. It takes as input a negative binomial model `model_glmm` which is the output of the `MCEM_algorithm` function, `data`, a data set for it to be applied to, `scale_to_reference_mean` to determine whether the predicted values should be scaled, and `reference` which is the city that the model was fit to. The output of this function is a vector of RMSE, MAE, and $R^2$ values. We apply this function to the london training, the london test, the dc data, and the seoul data.
+
 ```{r echo=TRUE}
-glmm_model_fit(glmm_fit, london_train, scale_to_reference_mean = "no", 
+glmm_model_fit(model_glmm = glmm_fit, data = london_train, scale_to_reference_mean = "no", 
                reference = london)
-glmm_model_fit(glmm_fit, london_test, scale_to_reference_mean = "no",
+glmm_model_fit(model_glmm = glmm_fit, data = london_test, scale_to_reference_mean = "no",
                reference = london)
-glmm_model_fit(glmm_fit, dc, scale_to_reference_mean = "yes",
+glmm_model_fit(model_glmm = glmm_fit, data = dc, scale_to_reference_mean = "yes",
                reference = london)
-glmm_model_fit(glmm_fit, seoul, scale_to_reference_mean = "yes",
+glmm_model_fit(glmm_fit, data = seoul, scale_to_reference_mean = "yes",
                reference = london)
 ```
 
+Unsurprisingly, we see that the GLMM model fits the london test data set the best out of the test sets. There does not seem to be a large difference between the $R^2$ values for the DC and Seoul data set, however the DC data set has a smaller RMSE and MAE, implying that the data may be less spread out in the DC data set. 
+
+
+A similar assessment for the fit of the random forests model was wrapped into the function `rf_model_fit()`. It takes as input a random forest model `model` which is the output of the `MCEM_algorithm` function, `data`, a data set for it to be applied to, `scale_to_reference_mean` to determine whether the predicted values should be scaled, and `reference` which is the city that the model was fit to. The output of this function is a vector of RMSE, MAE, and $R^2$ values. We apply this function to the london training, the london test, the dc data, and the seoul data.
+
+
 
 ```{r echo=TRUE}
-rf_model_fit(rf_fit, london_train, scale_to_reference_mean = "no", 
+rf_model_fit(model = rf_fit, london_train, data = scale_to_reference_mean = "no", 
              reference = london)
 rf_model_fit(rf_fit, london_test, scale_to_reference_mean = "no", 
              reference = london)
