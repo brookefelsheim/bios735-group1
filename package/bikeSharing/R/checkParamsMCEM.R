@@ -40,7 +40,7 @@ checkParamsMCEM <- function(beta_initial, theta_initial, s2gamma_initial,
   if (length(M) != 1) {
     stop("length of M is not 1")
   }
-  if (!is.numeric(all.equal(burn.in, as.integer(burn.in)))) {
+  if (!all.equal(burn.in, as.integer(burn.in))) {
     stop("burn.in is not a whole number")
   }
   if (length(burn.in) != 1) {
@@ -52,7 +52,7 @@ checkParamsMCEM <- function(beta_initial, theta_initial, s2gamma_initial,
   if (length(tol) != 1) {
     stop("length of tol is not 1")
   }
-  if (!is.numeric(all.equal(maxit, as.integer(maxit)))) {
+  if (!all.equal(maxit, as.integer(maxit))) {
     stop("maxit is not a whole number")
   }
   if (length(M) != 1) {
