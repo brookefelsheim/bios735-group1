@@ -1,6 +1,6 @@
 ---
 title: "Final Report"
-author: "Group 1: Jiawen Chen, Brooke Felsheim, Elena Kharitonova, Xinjie Qian, and Jairui Tang"
+author: "Group 1: Jiawen Chen, Brooke Felsheim, Elena Kharitonova, Xinjie Qian, and Jiarui Tang"
 date: "4/30/2022"
 output: pdf_document
 ---
