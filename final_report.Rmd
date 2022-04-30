@@ -76,61 +76,78 @@ london_test <- london[london$Year == "Year 2",]
 
 ## Negative Binomial Generalized Linear Mixed Model
 
-Let $y_{ij}$ be the number of bikes rented at hour $j$ of day $i$. We assume that the number of bikes rented for a given hour within a specific day follows a negative binomial distribution, so $Y_{ij} \sim NB(\mu_{ij}, \alpha)$ using the Hilbe parameterization, so:
+Let $y_{ij}$ be the number of bikes rented at hour chunk $j$ of day $i$. Thus $i$ ranges from 1 to 365, and $j$ ranges from 1 to 3, corresponding to hour chunks [00:00 - 8:00, 8:00-16:00, 16:00-24:00]. We assume that the number of bikes rented for a given hour chunk within a specific day follows a negative binomial distribution, so $Y_{ij} \sim NB(\mu_{ij}, \theta)$ using the Hilbe parameterization, so:
 
 \begin{equation}
-P(Y_{ij} = y_{ij}|\mu_{ij}, \alpha) =  \frac{\Gamma(y_{ij} + 1/\alpha)}{\Gamma(y_{ij} + 1)\Gamma(1/\alpha)} \left( \frac{1}{1 + \alpha \mu_{ij}} \right)^{1/\alpha} \left(\frac{\alpha \mu_{ij}}{1 + \alpha \mu_{ij}} \right)^{y_{ij}}
+P(Y_{ij} = y_{ij}|\mu_{ij}, \theta) =  \frac{\Gamma(y_{ij} + \theta)}{\Gamma(y_{ij} + 1)\Gamma(\theta)} \left( \frac{\theta}{\theta + \mu_{ij}} \right)^{\theta} \left(\frac{\mu_{ij}}{\theta +  \mu_{ij}} \right)^{y_{ij}}
 \end{equation}
 
-The mean of $y_{ij}$ for each day $i$ at time $j$ is $\mu_{ij}$, which we assume follows a negative binomial generalized linear mixed model with a random intercept. Thus it is determined from the following model: 
+The mean of $y_{ij}$ for each day $i$ at hour chunk $j$ is $\mu_{ij}$, which we assume follows a negative binomial generalized linear mixed model with a random intercept. Thus it is determined from the following model: 
 
 \begin{equation}
-    \log(\mu_{ij}) = x_{ij} \beta   + b_i 
+    \log(\mu_{ij}) = x_{ij}^T \beta   + b_i 
 \end{equation}
 
-Let $x_{ij}$ = (1, time$_{ij}$, temperature$_{ij}$, rainfall$_{ij}$, snowfall$_{ij}$, humidity$_{ij}$, season$_{i}$, holiday$_{i}$, weekend$_{i}$), where season$_{i}$ is a categorical variable with 1 for winter, 2 for spring, 3 for summer and 4 for autumn, holiday$_{i}$ is a binary variable with 1 for holiday, 0 for no holiday and weekend$_{i}$ is a binary variable with 1 for weekend, 0 for no weekend. Thus $\beta = (\beta_0, \beta_1, \beta_2, \beta_3, \beta_4, \beta_5, \beta_6, \beta_7, \beta_8)'$.  
+Let $x_{ij}$ = (1,
+I(HourChunk$_{ij}$ = [8,16)),
+I(HourChunk$_{ij}$ = [16,24)),
+Weekend$_{i}$,
+Holiday$_{i}$,
+I(Season$_{i}$ = Spring),
+I(Season$_{i}$ = Summer),
+I(Season$_{i}$ = Winter),
+Min_Temperature$_{i}$,
+Max_Temperature$_{i}$,
+Min_Humidity$_{i}$,
+Max_Humidity$_{i}$,
+Wind_Speed$_{ij}$,
+Rain_or_Snow$_{ij})^T$.
 
-In Equation (2), $b_i$ is the unobserved random effect that the day $i$ has on the number of rented bikes at any given hour. It is assumed that $b_i \sim N(0,\sigma^2)$.
+HourChunk$_{ij}$ is a categorical variable corresponding to the hour chunk $j$ of day $i$, with the reference hour chunk being [0:00,8:00), Weekend$_{i}$ is a binary variable with 1 if day $i$ is a weekend, 0 if it is not, 
+Holiday$_{i}$ is a binary variable with 1 if day $i$ is a holiday, 0 if it is not. Season$_{i}$ is a categorical variable corresponding to which season day $i$ is in, with the reference season being Autumn. The Min_Temperature$_{i}$ and Max_Temperature$_{i}$ are the minimum and maximum temperature of day $i$, respectively. Similarly, 
+The Min_Humidity$_{i}$ and Max_Humidity$_{i}$ are the minimum and maximum humidity of day $i$, respectively. Wind_Speed$_{ij}$ is the average wind speed of hour chunk $j$ of day $i$. Rain_or_Snow$_{i}$ is a binary variable with 1 if during day $i$ hour chunk $j$ there is any rain or snow, 0 if there is not. Thus $\beta = (\beta_0, \beta_1, \beta_2, \beta_3, \beta_4, \beta_5, \beta_6, \beta_7, \beta_8,\beta_9, \beta_{10}, \beta_{11}, \beta_{12}, \beta_{13})'$.  
+
+In Equation (2), $b_i$ is the unobserved random effect that the day $i$ has on the number of rented bikes at any given hour chunk. It is assumed that $b_i \sim N(0,\sigma^2_\gamma)$.
 
 
-Thus, of interest is the estimate $\alpha$, $\beta$, and $\sigma^2$. Equations 1 and 2 can be combined to obtain the following likelihood equation for a given day ($i$). 
+Thus, of interest is the estimate $\theta$, $\beta$, and $\sigma^2_\gamma$. Equations 1 and 2 can be combined to obtain the following likelihood equation for a given day ($i$). 
 
 \begin{equation}
-    L(\alpha, \beta, \sigma^2| \mathbf{y}, \mathbf{b}) =  \prod_{i=1}^{365} \prod_{j=0}^{23} p(y_{ij})  = 
-    \prod_{i=1}^{365} \left( \prod_{j=0}^{23} f(y_{ij}|\mu_{ij}) \right) f(b_i | \sigma^2) 
+    L(\theta, \beta, \sigma^2_\gamma| \mathbf{y}, \mathbf{b}) =  \prod_{i=1}^{365} \prod_{j=1}^{3} p(y_{ij})  = 
+    \prod_{i=1}^{365} \left( \prod_{j=1}^{3} f(y_{ij}|\mu_{ij}) \right) f(b_i | \sigma^2_\gamma) 
 \end{equation}
 
 Since the random effects $b_i$ are unobservable, this means they must be integrated out of the above expression to obtain the likelihood, so:
 
 
-\[  L(\alpha, \beta, \sigma^2| \mathbf{y}, \mathbf{b})  =  \prod_{i=1}^{365} \left[ \int \left( \prod_{j=0}^{23} f(y_{ij}|\mu_{ij}) \right) f(b_i | \sigma^2) \hspace{3 pt} db_i \right] \]
+\[  L(1/\theta, \beta, \sigma^2_\gamma| \mathbf{y}, \mathbf{b})  =  \prod_{i=1}^{365} \left[ \int \left( \prod_{j=1}^{3} f(y_{ij}|\mu_{ij}) \right) f(b_i | \sigma^2_\gamma) \hspace{3 pt} db_i \right] \]
 
-\[   = \prod_{i=1}^{365} \left[ \int \prod_{j=0}^{23} \frac{\Gamma(y_{ij} + 1/\alpha)}{\Gamma(y_{ij} + 1)\Gamma(1/\alpha)} \left( \frac{1}{1 + \alpha e^{x_{ij} \beta + b_i}} \right)^{1/\alpha} \left(\frac{\alpha  e^{x_{ij} \beta + b_i}}{1 + \alpha  e^{x_{ij} \beta + b_i}} \right)^{y_{ij}} \frac{1}{\sqrt{2 \pi \sigma^2}} \exp\left(-\frac{b_i^2}{2\sigma^2}\right) db_i \right]   \]
+\[   = \prod_{i=1}^{365} \left[ \int \prod_{j=1}^{3} \frac{\Gamma(y_{ij} + \theta)}{\Gamma(y_{ij} + 1)\Gamma(\theta)} \left( \frac{\theta}{\theta +  e^{x_{ij}^T \beta + b_i}} \right)^{\theta} \left(\frac{  e^{x_{ij}^T \beta + b_i}}{\theta +  e^{x_{ij}^T \beta + b_i}} \right)^{y_{ij}} \frac{1}{\sqrt{2 \pi \sigma^2_\gamma}} \exp\left(-\frac{b_i^2}{2\sigma^2}\right) db_i \right]   \]
 
 So thus, the log likelihood is found to be
 \begin{equation}
 \begin{split} 
-    l(\alpha, \beta, \sigma^2) = \sum_{i=1}^{365} log \bigg[ \int \prod_{j=0}^{23} \frac{\Gamma(y_{ij} + 1/\alpha)}{\Gamma(y_{ij} + 1)\Gamma(1/\alpha)} 
-    \left( \frac{1}{1 + \alpha e^{x_{ij} \beta + b_i}} \right)^{1/\alpha} \cdot \\
-    \left(\frac{\alpha  e^{x_{ij} \beta + b_i}}{1 + \alpha  e^{x_{ij} \beta + b_i}} \right)^{y_{ij}} \frac{1}{\sqrt{2 \pi \sigma^2}} \exp\left(-\frac{b_i^2}{2\sigma^2} \right)
+    l(1/\theta, \beta, \sigma^2_\gamma) = \sum_{i=1}^{365} log \bigg[ \int \prod_{j=1}^{3} \frac{\Gamma(y_{ij} + \theta)}{\Gamma(y_{ij} + 1)\Gamma(\theta)} 
+    \left( \frac{\theta}{\theta +  e^{x_{ij}^T \beta + b_i}} \right)^{\theta} \cdot \\
+    \left(\frac{e^{x_{ij} \beta + b_i}}{\theta +  e^{x_{ij} \beta + b_i}} \right)^{y_{ij}} \frac{1}{\sqrt{2 \pi \sigma^2_\gamma}} \exp\left(-\frac{b_i^2}{2\sigma^2_\gamma} \right)
     db_i
     \bigg] 
 \end{split}
 \end{equation}
 
-We will need to sample the random effects $b_i$ for the $i-$th subject. Let $Y_i=\{y_{ij}, j=0,\dots,23\}$. The density function for $b_i$ given $Y_i, \beta, \alpha, \sigma^2$ is:
+We will need to sample the random effects $b_i$ for the $i-$th day. Let $Y_i=(y_{i1},y_{i2},y_{i3})^T$. The density function for $b_i$ given $Y_i, \beta, \theta, \sigma^2_\gamma$ is:
 
 \begin{equation}
 \begin{split} 
-    P(b_i | Y_i,\alpha, \beta, \sigma^2) \propto P(Y_i | b_i, \alpha, \beta, \sigma^2)\cdot P(b_i|\sigma^2) \\ \propto \prod_{j=0}^{23} \bigg(\frac{1/\alpha}{\mu_{ij}+1/\alpha}\bigg)^{1/\alpha}\cdot \bigg(\frac{\mu_{ij}}{\mu_{ij}+1/\alpha}\bigg)^{y_{ij}}\cdot \exp\bigg(-\frac{b_i^2}{2\sigma^2}\bigg) \\
-    \propto \sum_{j=0}^{23} \bigg[ (y_{ij}\log\mu_{ij}-(y_{ij}+1/\alpha)\log(\mu_{ij}+1/\alpha))-\frac{b_i^2}{2\sigma^2}\bigg]
+    P(b_i | Y_i,\theta, \beta, \sigma^2_\gamma) \propto P(Y_i | b_i, \theta, \beta, \sigma^2_\gamma)\cdot P(b_i|\sigma^2_\gamma) \\ \propto \prod_{j=1}^{3} \bigg(\frac{\theta}{\mu_{ij}+\theta}\bigg)^{\theta}\cdot \bigg(\frac{\mu_{ij}}{\mu_{ij}+\theta}\bigg)^{y_{ij}}\cdot \exp\bigg(-\frac{b_i^2}{2\sigma^2_\gamma}\bigg) \\
+    \propto \sum_{j=1}^{3} \bigg[ (y_{ij}\log\mu_{ij}-(y_{ij}+\theta)\log(\mu_{ij}+\theta))-\frac{b_i^2}{2\sigma^2_\gamma}\bigg]
 \end{split}
 \end{equation}
 
-At the $r$th iteration of the MH algorithm with a current value $b_i^{(r)}$, a new $b_i$ is generated from $N(b^{(r)}, c(0)$ where $c(0)=(1+\sum_{j=0}^{23}\frac{1/\alpha\cdot\mu_{ij}^0}{\mu_{ij}^0+1/\alpha})^{-1}$ and $\mu_{ij}^0=\exp\{x_{ij}\beta\}$. The probability of accepting this new $b_i$ is:
+At the $r$th iteration of the MH algorithm with a current value $b_i^{(r)}$, a new $b_i$ is generated from $N(b^{(r)}, c(0)$ where $c(0)=(1+\sum_{j=1}^{3}\frac{\theta\cdot\mu_{ij}^0}{\mu_{ij}^0+\theta})^{-1}$ and $\mu_{ij}^0=\exp\{x_{ij}\beta\}$. The probability of accepting this new $b_i$ is:
 
 \begin{equation}
-    \min\bigg\{1, \frac{P(b_i | Y, \alpha, \beta, \sigma^2)}{P(b_i^{(r)} | Y, \alpha, \beta, \sigma^2)}\bigg\}
+    \min\bigg\{1, \frac{P(b_i | Y, \theta, \beta, \sigma^2_\gamma)}{P(b_i^{(r)} | Y, 1/\theta, \beta, \sigma^2_\gamma)}\bigg\}
 \end{equation}.
 
 
@@ -209,6 +226,10 @@ rf_fit <- train_random_forest(data = london_train)
 ```{r,echo=FALSE,warning=FALSE,message=FALSE,fig.width=5,fig.height=4,fig.align='center'}
 set.seed(735)
 model1 <- randomForest(Bike_count ~ Hour_chunks + Min_temp + Max_temp + Min_humidity + Max_humidity + Wind_speed+Rain_or_snow + Is_weekend + Season + Is_holiday+Date,data = train_factor, importance=TRUE, ntree=500,mtry = 7)
+
+#devtools::install_github('araastat/reprtree')
+library(reprtree)
+
 reprtree:::plot.getTree(model1,k=sample(1:500,1),depth=4,cex=1,font=2)
 ```
 
