@@ -34,7 +34,7 @@ checkParamsMCEM <- function(beta_initial, theta_initial, s2gamma_initial,
   if (length(s2gamma_initial) != 1) {
     stop("length of s2gamma_initial is not 1")
   }
-  if (!is.numeric(all.equal(M, as.integer(M)))) {
+  if (!(all.equal(M, as.integer(M)))) {
     stop("M is not a whole number")
   }
   if (length(M) != 1) {
