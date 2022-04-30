@@ -76,6 +76,64 @@ london_test <- london[london$Year == "Year 2",]
 
 ## Negative Binomial Generalized Linear Mixed Model
 
+Let $y_{ij}$ be the number of bikes rented at hour $j$ of day $i$. We assume that the number of bikes rented for a given hour within a specific day follows a negative binomial distribution, so $Y_{ij} \sim NB(\mu_{ij}, \alpha)$ using the Hilbe parameterization, so:
+
+\begin{equation}
+P(Y_{ij} = y_{ij}|\mu_{ij}, \alpha) =  \frac{\Gamma(y_{ij} + 1/\alpha)}{\Gamma(y_{ij} + 1)\Gamma(1/\alpha)} \left( \frac{1}{1 + \alpha \mu_{ij}} \right)^{1/\alpha} \left(\frac{\alpha \mu_{ij}}{1 + \alpha \mu_{ij}} \right)^{y_{ij}}
+\end{equation}
+
+The mean of $y_{ij}$ for each day $i$ at time $j$ is $\mu_{ij}$, which we assume follows a negative binomial generalized linear mixed model with a random intercept. Thus it is determined from the following model: 
+
+\begin{equation}
+    \log(\mu_{ij}) = x_{ij} \beta   + b_i 
+\end{equation}
+
+Let $x_{ij}$ = (1, time$_{ij}$, temperature$_{ij}$, rainfall$_{ij}$, snowfall$_{ij}$, humidity$_{ij}$, season$_{i}$, holiday$_{i}$, weekend$_{i}$), where season$_{i}$ is a categorical variable with 1 for winter, 2 for spring, 3 for summer and 4 for autumn, holiday$_{i}$ is a binary variable with 1 for holiday, 0 for no holiday and weekend$_{i}$ is a binary variable with 1 for weekend, 0 for no weekend. Thus $\beta = (\beta_0, \beta_1, \beta_2, \beta_3, \beta_4, \beta_5, \beta_6, \beta_7, \beta_8)'$.  
+
+In Equation (2), $b_i$ is the unobserved random effect that the day $i$ has on the number of rented bikes at any given hour. It is assumed that $b_i \sim N(0,\sigma^2)$.
+
+
+Thus, of interest is the estimate $\alpha$, $\beta$, and $\sigma^2$. Equations 1 and 2 can be combined to obtain the following likelihood equation for a given day ($i$). 
+
+\begin{equation}
+    L(\alpha, \beta, \sigma^2| \mathbf{y}, \mathbf{b}) =  \prod_{i=1}^{365} \prod_{j=0}^{23} p(y_{ij})  = 
+    \prod_{i=1}^{365} \left( \prod_{j=0}^{23} f(y_{ij}|\mu_{ij}) \right) f(b_i | \sigma^2) 
+\end{equation}
+
+Since the random effects $b_i$ are unobservable, this means they must be integrated out of the above expression to obtain the likelihood, so:
+
+
+\[  L(\alpha, \beta, \sigma^2| \mathbf{y}, \mathbf{b})  =  \prod_{i=1}^{365} \left[ \int \left( \prod_{j=0}^{23} f(y_{ij}|\mu_{ij}) \right) f(b_i | \sigma^2) \hspace{3 pt} db_i \right] \]
+
+\[   = \prod_{i=1}^{365} \left[ \int \prod_{j=0}^{23} \frac{\Gamma(y_{ij} + 1/\alpha)}{\Gamma(y_{ij} + 1)\Gamma(1/\alpha)} \left( \frac{1}{1 + \alpha e^{x_{ij} \beta + b_i}} \right)^{1/\alpha} \left(\frac{\alpha  e^{x_{ij} \beta + b_i}}{1 + \alpha  e^{x_{ij} \beta + b_i}} \right)^{y_{ij}} \frac{1}{\sqrt{2 \pi \sigma^2}} \exp\left(-\frac{b_i^2}{2\sigma^2}\right) db_i \right]   \]
+
+So thus, the log likelihood is found to be
+\begin{equation}
+\begin{split} 
+    l(\alpha, \beta, \sigma^2) = \sum_{i=1}^{365} log \bigg[ \int \prod_{j=0}^{23} \frac{\Gamma(y_{ij} + 1/\alpha)}{\Gamma(y_{ij} + 1)\Gamma(1/\alpha)} 
+    \left( \frac{1}{1 + \alpha e^{x_{ij} \beta + b_i}} \right)^{1/\alpha} \cdot \\
+    \left(\frac{\alpha  e^{x_{ij} \beta + b_i}}{1 + \alpha  e^{x_{ij} \beta + b_i}} \right)^{y_{ij}} \frac{1}{\sqrt{2 \pi \sigma^2}} \exp\left(-\frac{b_i^2}{2\sigma^2} \right)
+    db_i
+    \bigg] 
+\end{split}
+\end{equation}
+
+We will need to sample the random effects $b_i$ for the $i-$th subject. Let $Y_i=\{y_{ij}, j=0,\dots,23\}$. The density function for $b_i$ given $Y_i, \beta, \alpha, \sigma^2$ is:
+
+\begin{equation}
+\begin{split} 
+    P(b_i | Y_i,\alpha, \beta, \sigma^2) \propto P(Y_i | b_i, \alpha, \beta, \sigma^2)\cdot P(b_i|\sigma^2) \\ \propto \prod_{j=0}^{23} \bigg(\frac{1/\alpha}{\mu_{ij}+1/\alpha}\bigg)^{1/\alpha}\cdot \bigg(\frac{\mu_{ij}}{\mu_{ij}+1/\alpha}\bigg)^{y_{ij}}\cdot \exp\bigg(-\frac{b_i^2}{2\sigma^2}\bigg) \\
+    \propto \sum_{j=0}^{23} \bigg[ (y_{ij}\log\mu_{ij}-(y_{ij}+1/\alpha)\log(\mu_{ij}+1/\alpha))-\frac{b_i^2}{2\sigma^2}\bigg]
+\end{split}
+\end{equation}
+
+At the $r$th iteration of the MH algorithm with a current value $b_i^{(r)}$, a new $b_i$ is generated from $N(b^{(r)}, c(0)$ where $c(0)=(1+\sum_{j=0}^{23}\frac{1/\alpha\cdot\mu_{ij}^0}{\mu_{ij}^0+1/\alpha})^{-1}$ and $\mu_{ij}^0=\exp\{x_{ij}\beta\}$. The probability of accepting this new $b_i$ is:
+
+\begin{equation}
+    \min\bigg\{1, \frac{P(b_i | Y, \alpha, \beta, \sigma^2)}{P(b_i^{(r)} | Y, \alpha, \beta, \sigma^2)}\bigg\}
+\end{equation}.
+
+
 ```{r eval=FALSE, include=TRUE, echo=TRUE}
 glmm_fit <- MCEM_algorithm( beta_initial = c(8.3, 1.5, 1.5, -0.25, -0.50, 0, 
                                              0, -0.25, 0, 0, 0, 0, 0, -0.25),
@@ -88,6 +146,8 @@ glmm_fit <- MCEM_algorithm( beta_initial = c(8.3, 1.5, 1.5, -0.25, -0.50, 0,
                          data = london_train
                          )
 ```
+
+
 ```{r echo=TRUE}
 str(glmm_fit)
 ```
