@@ -208,7 +208,7 @@ cat report_files/london_cat_output.txt
 str(glmm_fit)
 ```
 
-```{r echo=FALSE}
+```{r echo=FALSE, fig.cap= "Values of theta in each iteration of the run of `MCEM_algorithm` on the London training set."}
 
 x <- c(10.380,12.726,14.086,16.304,17.007,17.768,18.032,17.536, 18.146,18.152,17.895,17.985,18.295,18.380,18.497,18.442,18.532,18.638,18.449,18.310,18.560,18.519,18.422)
 
@@ -217,7 +217,8 @@ x <- c(10.380,12.726,14.086,16.304,17.007,17.768,18.032,17.536, 18.146,18.152,17
 plot(x, type="l", xlab="Iteration", ylab = "theta", main="Values of theta in each iteration")
 points(x,pch=16)
 ```
-As we can see in the figure, the estimation of $\theta$, $\hat{\theta}$ converges quickly and from $9^{th}$ iteration, it starts to float near the true $\theta$.
+     
+As we can see in Figure 2, the estimation of $\theta$, $\hat{\theta}$ converges quickly and from $9^{th}$ iteration, it starts to float near the true $\theta$.
 
 ## Machine learning models
 
@@ -283,7 +284,7 @@ library(reprtree)
 reprtree:::plot.getTree(model1,k=sample(1:500,1),depth=4,cex=1,font=2)
 ```
 
-Random forest sample trees share similar splits with conditional inference trees (Figure 3). The estimated bike rental count is much higher in the hour chunks that are not 0-8am. Additionally, the estimated count is high when the temperature is more than 22.25 degrees.
+Random forest sample trees share similar splits with conditional inference trees (Figure 4). The estimated bike rental count is much higher in the hour chunks that are not 0-8am. Additionally, the estimated count is high when the temperature is more than 22.25 degrees.
 
 ### Variable Importance in machine learning models
 To investigate which variables affect the prediction most, we calculate the importance of the variables in the conditional inference tree and the random forest. In conditional inference tree, we calculated the mean decrease in accuracy when deleting a variable (Table 1).
@@ -292,7 +293,7 @@ To investigate which variables affect the prediction most, we calculate the impo
 knitr::kable(ctree_mda,caption = "Mean decrease in accuracy of variables in the conditional inference tree")
 ```
 
-In random forest, we calculate the increase in MSE when deleting a variable (Figure 4). The code to do this was implemented as a function `plot_rf_importance` in the `bikeSharing` R package. 
+In random forest, we calculate the increase in MSE when deleting a variable (Figure 5). The code to do this was implemented as a function `plot_rf_importance` in the `bikeSharing` R package. 
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE,fig.width=5,fig.height=4,fig.align='center',fig.cap="Feature importance in the random forest model"}
 plot_rf_importance(london_train)
@@ -334,13 +335,13 @@ A similar assessment for the fit of the random forests model was wrapped into th
 
 
 ```{r echo=TRUE}
-rf_model_fit(model = rf_fit, london_train, data = scale_to_reference_mean = "no", 
+rf_model_fit(model = rf_fit, data = london_train, scale_to_reference_mean = "no", 
              reference = london)
-rf_model_fit(rf_fit, london_test, scale_to_reference_mean = "no", 
+rf_model_fit(rf_fit, data = london_test, scale_to_reference_mean = "no", 
              reference = london)
-rf_model_fit(rf_fit, dc, scale_to_reference_mean = "yes", 
+rf_model_fit(rf_fit, data = dc, scale_to_reference_mean = "yes", 
              reference = london)
-rf_model_fit(rf_fit, seoul, scale_to_reference_mean = "yes", 
+rf_model_fit(rf_fit, data = seoul, scale_to_reference_mean = "yes", 
              reference = london)
 ```
 
@@ -380,9 +381,12 @@ ggplot(all_data, aes(x = Bike_count2)) +
   facet_wrap(~city2) + theme_classic() + xlim(0,30000) + 
   labs(title = "Distribution of Bike Counts for Cities", 
        y = "Density", x = "Bike Count")
+```
+```{r echo=TRUE}
 mean(london_test$Bike_count)
 mean(london_train$Bike_count)
 ```
+
 
 
 # Discussion and Conclusion
