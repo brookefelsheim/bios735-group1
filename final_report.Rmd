@@ -344,7 +344,6 @@ glmm_model_fit(glmm_fit, data = seoul, scale_to_reference_mean = "yes",
 
 Unsurprisingly, we see that the GLMM model fits the London test data set the best out of the test sets. There does not seem to be a large difference between the $R^2$ values for the DC and Seoul data set, however the DC data set has a smaller RMSE and MAE, implying that the DC bike counts may be less spread out than the Seoul bike counts. 
 
-
 A similar assessment for the fit of the random forests model was wrapped into the function `rf_model_fit()`. It takes as input a random forest model, `model`, which is the output of the `train_random_forest` function, `data`, a data set for which bike counts will be predicted applied to, `scale_to_reference_mean` to determine whether the predicted values should be scaled, and `reference` which is the city that the model was fit to. The output of this function is a vector of RMSE, MAE, and $R^2$ values. We apply this function to the London training, the London test, the DC data, and the Seoul data.
 
 
@@ -423,11 +422,11 @@ The London training and test set have a very similar distribution, which explain
 
 # Discussion and Conclusion
 
-In conclusion, factors including hours, holidays, min temperature, max temperature, min humidity, max humidity, average wind speed and presence of rain/snow all have inference on the number of bike rented in the three cities. Hours from 4pm to midnight have the largest effect on the number of bike rented. Hours from 8am to 4pm, winter season, rain/snow also have large impact on the bike rent count. Random Forest have better prediction result on all the training and testing data, compared to the results of GLMM.
+In conclusion, factors including hours, holidays, min temperature, max temperature, min humidity, max humidity, average wind speed and presence of rain/snow all have inference on the number of bike rented in London. Hours from 4pm to midnight have the largest effect on the number of bike rented. Hours from 8am to 4pm, winter season, rain/snow also have a large impact on the bike rent count. Random forest has a better prediction results in all the training and testing data, compared to the results of GLMM.
 
-In addition to the conclusion above, we also have some findings that need to discuss more. The RMSE for Seoul is much larger than that in the other two cities. The results on the test dataset are much worse than in the training dataset. This may imply that our model may have some limitations across cities. The possible reason is that in our model, we only considered the effects of days, hours and weather on the bike count but did not take information about cities into consideration (e.g. population, GDP), which may cause bias in prediction.
+In addition to the conclusions above, we also have some findings that need more discussion. The RMSE for Seoul is much larger than that for the other two cities. The results for the non London test datasets are worse than the results for either of the two London data sets. This may imply that our model may have some limitations across cities. One possible reason is that in our model, we only considered the effects of days, hours and weather on the bike count but did not take information about cities into consideration (e.g. population, GDP), which may cause bias in prediction.
 
-To get a better understanding on how our model predict on the sequences of bike count in different dataset, we plotted out the predicted bike count and the ground truth for each of the four datasets. Below is the longitudinal plots of the predicted bike count and the true bike count in the three cities.
+To get a better understanding on how our negative binomial GLMM model predicts the sequences of bike count in different dataset, we plotted out the predicted bike count and the ground truth for each of the four datasets. Below is the longitudinal plots of the predicted bike count (in black) and the true bike count (in red) for the three cities. As we can see, for Seoul, our models have a tendency to underestimate the predicted bike count in the earlier and later time points, however the model overestimates the bike counts in the middle time points. This is likely why the model has such a larger RMSE and a poor overall fit.
 
 ```{r,include=FALSE}
 # function to output the prediction results
@@ -450,19 +449,18 @@ get_prediction = function(model_glmm=output,data,scale_data=FALSE) {
   true = as.numeric(data$Bike_count)
   df = as.data.frame(cbind(index = c(1:length(pred)),pred = pred, true = true))
 }
+
+
 ```
 
 ```{r,include=FALSE}
-load("londonoutput_M1000.Rdata")
-model_glmm = output
+df_seoul = get_prediction(model_glmm=glmm_fit,data=seoul,scale_data=TRUE)
 
-df_seoul = get_prediction(model_glmm=model_glmm,data=seoul,scale_data=TRUE)
+df_london_train = get_prediction(model_glmm=glmm_fit,data=london_train,scale_data=FALSE)
 
-df_london_train = get_prediction(model_glmm=model_glmm,data=london_train,scale_data=FALSE)
+df_london_test = get_prediction(model_glmm=glmm_fit,data=london_test,scale_data=FALSE)
 
-df_london_test = get_prediction(model_glmm=model_glmm,data=london_test,scale_data=FALSE)
-
-df_dc = get_prediction(model_glmm=model_glmm,data=dc,scale_data=TRUE)
+df_dc = get_prediction(model_glmm=glmm_fit,data=dc,scale_data=TRUE)
 ```
 
 ```{r, warning=FALSE,fig.align='center',message=FALSE}
@@ -472,34 +470,34 @@ library(ggplot2)
 p1=
   ggplot(data = df_seoul,aes(index))+geom_point(aes(y=pred),size=0.2)+geom_line(aes(y=pred),size=0.2)+
   geom_point(aes(y=true),color = "red",alpha=0.4,size=0.2)+geom_line(aes(y=true),color = "red",alpha=0.5,size=0.1)+
-  ggtitle("Bike Count in Seoul Pred (black) vs True") + ylim(0,35000) +xlab("Time Index")+
+  ggtitle("Bike Count in Seoul Pred (black) vs True (red)") + ylim(0,35000) +xlab("Time Index")+
   theme(plot.title=element_text(size=8))
 
 p2=
   ggplot(data = df_london_train,aes(index))+geom_point(aes(y=pred),size=0.2)+geom_line(aes(y=pred),size=0.2)+
   geom_point(aes(y=true),color = "red",alpha=0.4,size=0.2)+geom_line(aes(y=true),color = "red",alpha=0.5,size=0.1)+
-  ggtitle("Bike Count in London Train Pred (black) vs True")+ ylim(0,35000)+xlab("Time Index")+
+  ggtitle("Bike Count in London Train Pred (black) vs True (red)")+ ylim(0,35000)+xlab("Time Index")+
   theme(plot.title=element_text(size=8))
 
 p3=
   ggplot(data = df_london_test,aes(index))+geom_point(aes(y=pred),size=0.2)+geom_line(aes(y=pred),size=0.2)+
   geom_point(aes(y=true),color = "red",alpha=0.4,size=0.2)+geom_line(aes(y=true),color = "red",alpha=0.5,size=0.1)+
-  ggtitle("Bike Count in London Test Pred (black) vs True")+ ylim(0,35000)+xlab("Time Index")+
+  ggtitle("Bike Count in London Test Pred (black) vs True (red)")+ ylim(0,35000)+xlab("Time Index")+
   theme(plot.title=element_text(size=8))
 
 p4=
   ggplot(data = df_dc,aes(index))+geom_point(aes(y=pred),size=0.2)+geom_line(aes(y=pred),size=0.2)+
   geom_point(aes(y=true),color = "red",alpha=0.4,size=0.2)+geom_line(aes(y=true),color = "red",alpha=0.5,size=0.1)+
-  ggtitle("Bike Count in DC Pred (black) vs True")+ ylim(0,35000)+xlab("Time Index")+
+  ggtitle("Bike Count in DC Pred (black) vs True (red)")+ ylim(0,35000)+xlab("Time Index")+
   theme(plot.title=element_text(size=8))
-ggarrange(p1, p2, p3, p4, 
+ggarrange(p2, p3, p1, p4, 
           labels = c("A", "B", "C","D"),
           ncol = 2, nrow = 2)
 #dev.off()
 
 ```
 
-To understand the bias and variance of our prediction results, we also drew the boxplots of predicted bike count and the true bike count of the four datasets. The plots are shown below:
+To understand the bias and variance of our prediction results, we also drew the boxplots of predicted bike count and the true bike count of the four datasets. The plots are shown below. As we can see, DC has a very small range of both predicted and true bike counts, which explains why its RMSE and MAE values are much lower than that of the other data sets.
 
 ```{r, warning=FALSE,fig.align='center'}
 library(tidyverse)
@@ -543,7 +541,7 @@ boxplot_dc = df_dc %>%
 p4=ggplot(data = boxplot_dc,aes(x = label, y = value)) +geom_boxplot() + ylim(0,35000)+
   ggtitle("Bike Count Boxplot in DC Test Pred (left) vs True")+ylab("Bike Count")+
   theme(plot.title=element_text(size=8))
-ggarrange(p1, p2, p3, p4, 
+ggarrange(p2, p3, p1, p4, 
           labels = c("A", "B", "C","D"),
           ncol = 2, nrow = 2)
 ```
