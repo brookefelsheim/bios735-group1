@@ -1,7 +1,7 @@
 ---
 title: \vspace{-1.25cm} Final Report \vspace{-0.5cm}
 author: "Group 1: Jiawen Chen, Brooke Felsheim, Elena Kharitonova, Xinjie Qian, and Jiarui Tang"
-date:  \vspace{-0.3cm} 4/30/2022" \vspace{-0.3cm}
+date:  \vspace{-0.3cm} 4/30/2022 \vspace{-0.3cm}
 output: pdf_document
 ---
 
