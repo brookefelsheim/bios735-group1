@@ -497,9 +497,7 @@ ggarrange(p2, p3, p1, p4,
 
 ```
 
-<<<<<<< HEAD
-To understand the bias and variance of our prediction results, we also drew the boxplots of predicted bike count and the true bike count of the four datasets. The plots are shown below. As we can see, DC has a very small range of both predicted and true bike counts, which explains why its RMSE and MAE values are much lower than that of the other data sets.
-=======
+
 ```{r,include=FALSE,results='hide'}
 outliers_seoul = df_seoul[which((df_seoul$diff<(mean(df_seoul$diff)-2*sd(df_seoul$diff)))|(df_seoul$diff>(mean(df_seoul$diff)+2*sd(df_seoul$diff)))),]
 table(outliers_seoul$Hour_chunks)
@@ -530,7 +528,7 @@ table(outliers_dc$Min_temp)
 From these time series plots, we can see that our model performs well on the testing set of London except for some accidentally extremely overestimated points at the time index around 400 (around May 08th), 650 (around June 24th), and 1060 (around Dec 25th). We define the predictions whose distance to the true value is two standard deviation above the average distance to true value as the **extremely inaccurate predictions**. Most extremely inaccurate predictions on the London testing dataset happened at summer. The prediction resuls on Seoul dataset are much worse than the others. Most extremely inaccurate predictions happened at summer when the humidity is high and the temperature is high, similar to the prediction on London testing dataset. It is worth noting that the prediction on the DC dataset is different from that on the two dataset above. Most extremely inaccurate predictions are from [8,16) hour chuncks (111 out of 139). It is possibly because the bike count distribution in the training dataset of London between 8am to 4pm is much different from that in the DC dataset. Also different from Seoul and London, most extremely inaccurate predictions of DC dataset happened at Autumn (64 out of 139). But similar to Seoul and London, most extremely inaccurate predictions of DC dataset happened at weather with higher temperature.
 
 To understand the bias and variance of our prediction results, we also drew the boxplots of predicted bike count and the true bike count of the four datasets. The plots are shown below:
->>>>>>> d8f6d814f7e303be503ada8ce193d310e9bdcfc4
+
 
 ```{r, warning=FALSE,fig.align='center'}
 library(tidyverse)
