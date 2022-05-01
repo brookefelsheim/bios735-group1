@@ -158,7 +158,7 @@ Where ${ \mu_{ij}^{(t)} = e^{ x_{ij}^T \beta^{(t)}   + b_i  } }$ and ${f(b_i |y,
 \end{split}
 \end{equation}
 
-If we could sample from this posterior distribution of $b_i$, we could approximate this integral using a montecarlo approach. So,
+If we could sample from this posterior distribution of $b_i$, we could approximate this integral using a monte carlo approach. So,
 
 
 \[Q(\theta, \beta, \sigma^2_\gamma|y, \theta^{(t)}, \beta^{(t)}, {\sigma^2_\gamma}^{(t)}) 
@@ -167,7 +167,7 @@ If we could sample from this posterior distribution of $b_i$, we could approxima
 
 Where $b_{ik}$ is one of the $M$ samples of the posterior distribution $b_i$ and ${ \mu_{ijk}^{(t)} = e^{ x_{ij}^T \beta^{(t)}   + b_{ik}  } }$.
 
-To sample from this distribution posterior distribution of $b_i$, we employed the metropolis hastings algorithm with a random walk. So at set $t$, for each new $b_i$, we considered $b_i^* = b_i^{(t)} + \epsilon$ where $\epsilon \sim U\left(-\frac{1}{4}, \frac{1}{4}\right)$. From this, the Metropolis Hastings ratio $R(b_i^{(t)}, b_i^*)$ was determined whether or not to accept this new $b_i^*$. For each new $b_I^*$
+To sample from this distribution posterior distribution of $b_i$, we employed the metropolis hastings algorithm with a random walk. So at set $t$, for each new $b_i$, we considered $b_i^* = b_i^{(t)} + \epsilon$ where $\epsilon \sim U\left(-\frac{1}{4}, \frac{1}{4}\right)$. From this, the Metropolis Hastings ratio $R(b_i^{(t)}, b_i^*)$ was determined whether or not to accept this new $b_i^*$. For each new $b_i^*$
 
 \[R(b_i^{(t)}, b_i^*) = \frac{f(y_{ij}|\theta, \beta, \sigma^2_\gamma,b_i^*)f(b_i^* | \sigma^2_\gamma)}{f(y_{ij}|\theta, \beta, \sigma^2_\gamma,b_i^{(t)})f(b_i^{(t)} | \sigma^2_\gamma)}\]
 
@@ -232,7 +232,7 @@ The size of the coefficients of the binary and categorical variables can be comp
 
 Next, we applied two machine learning methods to predict the bike count. The first model we used is a conditional inference tree. In traditional partitioning, all possible splits are investigated to find the best split, which results in overfitting and selection. The conditional inference tree embeds the partition step with a permutation test, thereby enabling this method to be robust to covariates of different scales. Furthermore, it is capable of stopping when no significant correlation exists between the covariates and the response (Hothorn, Hornik, and Zeileis 2006). We employed the ctree funciton in the partykit to fit the conditional inference tree.
 
-We visualized the three layer conditional inference tree in order to verify the relationship between bike count and variables (Figure 2). It is apparent that people tend to rent fewer bikes between midnight and 8 am. Maximum temperatures and humidity also affect bike rental rates. The splits that are employed in the conditional reference tree provide well reasoned explanations of the data structure, which means high accuracy predictions are made.
+We visualized the three layer conditional inference tree in order to verify the relationship between bike count and variables (Figure 3). It is apparent that people tend to rent fewer bikes between midnight and 8 am. Maximum temperatures and humidity also affect bike rental rates. The splits that are employed in the conditional reference tree provide well reasoned explanations of the data structure, which means high accuracy predictions are made.
 
 ```{r,echo=FALSE,warning=FALSE,message=FALSE,fig.width=5,fig.height=3,fig.align='center',fig.cap="Three layer conditional inference tree"}
 # conditional inference tree
