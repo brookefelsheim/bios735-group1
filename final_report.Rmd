@@ -449,16 +449,13 @@ get_prediction = function(model_glmm=output,data,scale_data=FALSE) {
 ```
 
 ```{r,include=FALSE}
-load("londonoutput_M1000.Rdata")
-model_glmm = output
+df_seoul = get_prediction(model_glmm=glmm_fit,data=seoul,scale_data=TRUE)
 
-df_seoul = get_prediction(model_glmm=model_glmm,data=seoul,scale_data=TRUE)
+df_london_train = get_prediction(model_glmm=glmm_fit,data=london_train,scale_data=FALSE)
 
-df_london_train = get_prediction(model_glmm=model_glmm,data=london_train,scale_data=FALSE)
+df_london_test = get_prediction(model_glmm=glmm_fit,data=london_test,scale_data=FALSE)
 
-df_london_test = get_prediction(model_glmm=model_glmm,data=london_test,scale_data=FALSE)
-
-df_dc = get_prediction(model_glmm=model_glmm,data=dc,scale_data=TRUE)
+df_dc = get_prediction(model_glmm=glmm_fit,data=dc,scale_data=TRUE)
 ```
 
 ```{r, warning=FALSE,fig.align='center',message=FALSE}
