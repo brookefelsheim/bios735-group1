@@ -1,7 +1,7 @@
 ---
 title: \vspace{-1.25cm} Final Report \vspace{-0.5cm}
 author: "Group 1: Jiawen Chen, Brooke Felsheim, Elena Kharitonova, Xinjie Qian, and Jiarui Tang"
-date:  \vspace{-0.3cm} 4/30/2022" \vspace{-0.3cm}
+date:  \vspace{-0.3cm} 4/30/2022 \vspace{-0.3cm}
 output: pdf_document
 ---
 
@@ -405,9 +405,9 @@ colnames(summary)[1] = "City"
 knitr::kable(summary,caption = "Average of Covariates From All Data Sets")
 ```
 
-As we can see, there does not appear to be any major differences in the average of the covariates between the cities. This implies that the issue in applying the fitted models to the new cities is not the range of the covariates, such as the temperature range, humidity range, wind speed range, the number of holidays or the number of rain/snow days. Therefore, to further determine the cause of the poor fit of the model in DC and Seoul, the distribution of the bike counts is examined for each of the data sets below. The DC bike counts and the seoul bike counts were scaled by  $\frac{\textrm{Average Bike Count of London}}{\textrm{Average Bike Count of City}}$. This was done so that the distribution of bike counts would be on the same scale as the London data set, so that the distributions could be compared more directly. 
+As we can see, there does not appear to be any major differences in the average of the covariates between the cities. This implies that the issue in applying the fitted models to the new cities is not the range of the covariates, such as the temperature range, humidity range, wind speed range, the number of holidays or the number of rain/snow days. Therefore, to further determine the cause of the poor fit of the model in DC and Seoul, the distribution of the bike counts is examined for each of the data sets below (Figure 6). The DC bike counts and the seoul bike counts were scaled by  $\frac{\textrm{Average Bike Count of London}}{\textrm{Average Bike Count of City}}$. This was done so that the distribution of bike counts would be on the same scale as the London data set, so that the distributions could be compared more directly. 
 
-```{r, echo =FALSE, warning=FALSE, message = FALSE}
+```{r, echo =FALSE, warning=FALSE, message = FALSE, fig.cap="Density plots showing the distribution of bike count rental observations for each training and testing set."}
 ggplot(all_data, aes(x = Bike_count2)) + 
   geom_histogram(fill = "dark blue", aes(y = stat(density))) + 
   facet_wrap(~city2) + theme_classic() + xlim(0,30000) + 
@@ -447,7 +447,7 @@ get_prediction = function(model_glmm=output,data,scale_data=FALSE) {
   }
   pred = as.numeric(pred)
   true = as.numeric(data$Bike_count)
-  df = as.data.frame(cbind(index = c(1:length(pred)),pred = pred, true = true))
+  df = as.data.frame(cbind(index = c(1:length(pred)),data,pred = pred, true = true,diff=as.numeric(pred-true)))
 }
 
 
@@ -497,7 +497,40 @@ ggarrange(p2, p3, p1, p4,
 
 ```
 
+<<<<<<< HEAD
 To understand the bias and variance of our prediction results, we also drew the boxplots of predicted bike count and the true bike count of the four datasets. The plots are shown below. As we can see, DC has a very small range of both predicted and true bike counts, which explains why its RMSE and MAE values are much lower than that of the other data sets.
+=======
+```{r,include=FALSE,results='hide'}
+outliers_seoul = df_seoul[which((df_seoul$diff<(mean(df_seoul$diff)-2*sd(df_seoul$diff)))|(df_seoul$diff>(mean(df_seoul$diff)+2*sd(df_seoul$diff)))),]
+table(outliers_seoul$Hour_chunks)
+table(outliers_seoul$Season)
+table(outliers_seoul$Max_humidity)
+table(outliers_seoul$Min_humidity)
+table(outliers_seoul$Date)
+table(outliers_seoul$Max_temp)
+table(outliers_seoul$Min_temp)
+outliers_london_test = df_london_test[which((df_london_test$diff<(mean(df_london_test$diff)-2*sd(df_london_test$diff)))|(df_london_test$diff>(mean(df_london_test$diff)+2*sd(df_london_test$diff)))),]
+table(outliers_london_test$Hour_chunks)
+table(outliers_london_test$Season)
+table(outliers_london_test$Max_humidity)
+table(outliers_london_test$Min_humidity)
+table(outliers_london_test$Date)
+table(outliers_london_test$Max_temp)
+table(outliers_london_test$Min_temp)
+outliers_dc = df_dc[which((df_dc$diff<(mean(df_dc$diff)-2*sd(df_dc$diff)))|(df_dc$diff>(mean(df_dc$diff)+2*sd(df_dc$diff)))),]
+table(outliers_dc$Hour_chunks)
+table(outliers_dc$Season)
+table(outliers_dc$Max_humidity)
+table(outliers_dc$Min_humidity)
+table(outliers_dc$Date)
+table(outliers_dc$Max_temp)
+table(outliers_dc$Min_temp)
+```
+
+From these time series plots, we can see that our model performs well on the testing set of London except for some accidentally extremely overestimated points at the time index around 400 (around May 08th), 650 (around June 24th), and 1060 (around Dec 25th). We define the predictions whose distance to the true value is two standard deviation above the average distance to true value as the **extremely inaccurate predictions**. Most extremely inaccurate predictions on the London testing dataset happened at summer. The prediction resuls on Seoul dataset are much worse than the others. Most extremely inaccurate predictions happened at summer when the humidity is high and the temperature is high, similar to the prediction on London testing dataset. It is worth noting that the prediction on the DC dataset is different from that on the two dataset above. Most extremely inaccurate predictions are from [8,16) hour chuncks (111 out of 139). It is possibly because the bike count distribution in the training dataset of London between 8am to 4pm is much different from that in the DC dataset. Also different from Seoul and London, most extremely inaccurate predictions of DC dataset happened at Autumn (64 out of 139). But similar to Seoul and London, most extremely inaccurate predictions of DC dataset happened at weather with higher temperature.
+
+To understand the bias and variance of our prediction results, we also drew the boxplots of predicted bike count and the true bike count of the four datasets. The plots are shown below:
+>>>>>>> d8f6d814f7e303be503ada8ce193d310e9bdcfc4
 
 ```{r, warning=FALSE,fig.align='center'}
 library(tidyverse)
@@ -545,6 +578,8 @@ ggarrange(p2, p3, p1, p4,
           labels = c("A", "B", "C","D"),
           ncol = 2, nrow = 2)
 ```
+
+From the boxplots, we can see that the predictions on Seoul dataset have noticable bias and the predictions on DC dataset also have some bias, which can help explain the poor RMSE and R2 in the two dataset.
 
 Overall, our result is consistent with the published research by Sylwia et al. (2021) in "Impact of environment on bicycle travel demand-Assessment using bikeshare system data". In their study, they used the data from the bike sharing system in Cracow, Polan and conducted an ordinal least square regression model to analyze the effect of daily air temperature, daily rainfall, public holidays, and school holidays on the daily number of bike rented from bike sharing system. Their study result indicated that weather conditions, especially air temperature and daily rainfall, have large impact on the number of bike sharing system, which is consistent with ours result. Compared to their research, our study further found that the maximum temperature and the minimum humidity have more impact on the bike count. We did not restrict our study on daily level but cut one day into different hour chunks and found that different hour chunks in one day can also have large effect on the number of bike rented from bike sharing system.
 
