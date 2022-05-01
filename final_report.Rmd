@@ -148,7 +148,7 @@ Thus, for the MCEM algorithm, we will be maximizing the expectation of the compl
 \[ = E\left[ \sum_{i=1}^{365} \left( \sum_{j=1}^{3} \log f(y_{ij}|\mu_{ij}^{(t)})  + \log f(b_i | {\sigma^2_\gamma}^{(t)}) \right) \right] \]
 
 \[
-=  \sum_{i=1}^{365} \left[ \int \left( \sum_{j=1}^{3} \log f(y_{ij}|\mu_{ij}^{(t)})  + \log f(b_i | {\sigma^2_\gamma}^{(t)}) f(b_i |y, \theta^{(t)}, \beta^{(t)}, {\sigma^2_\gamma}^{(t)} \right) db_i \right]
+=  \sum_{i=1}^{365} \left[ \int \left( \sum_{j=1}^{3} \log f(y_{ij}|\mu_{ij}^{(t)})  + \log f(b_i | {\sigma^2_\gamma}^{(t)})\right) f(b_i |y, \theta^{(t)}, \beta^{(t)}, {\sigma^2_\gamma}^{(t)} ) db_i \right]
  \]
  
 Where ${ \mu_{ij}^{(t)} = e^{ x_{ij}^T \beta^{(t)}   + b_i  } }$ and ${f(b_i |y, \theta^{(t)}, \beta^{(t)}, {\sigma^2_\gamma}^{(t)} )}$ is  the posterior distribution of $b_i$ given the observed data and the current parameter estimates.  Let $Y_i=(y_{i1},y_{i2},y_{i3})^T$. The density function for $b_i$ given $Y_i, \beta^{(t)}, \theta^{(t)}, {\sigma^2_\gamma}^{(t)}$ is:
