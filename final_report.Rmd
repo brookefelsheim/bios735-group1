@@ -402,9 +402,9 @@ colnames(summary)[1] = "City"
 knitr::kable(summary,caption = "Average of Covariates From All Data Sets")
 ```
 
-As we can see, there does not appear to be any major differences in the average of the covariates between the cities. This implies that the issue in applying the fitted models to the new cities is not the range of the covariates, such as the temperature range, humidity range, wind speed range, the number of holidays or the number of rain/snow days. Therefore, to further determine the cause of the poor fit of the model in DC and Seoul, the distribution of the bike counts is examined for each of the data sets below. The DC bike counts and the seoul bike counts were scaled by  $\frac{\textrm{Average Bike Count of London}}{\textrm{Average Bike Count of City}}$. This was done so that the distribution of bike counts would be on the same scale as the London data set, so that the distributions could be compared more directly. 
+As we can see, there does not appear to be any major differences in the average of the covariates between the cities. This implies that the issue in applying the fitted models to the new cities is not the range of the covariates, such as the temperature range, humidity range, wind speed range, the number of holidays or the number of rain/snow days. Therefore, to further determine the cause of the poor fit of the model in DC and Seoul, the distribution of the bike counts is examined for each of the data sets below (Figure 6). The DC bike counts and the seoul bike counts were scaled by  $\frac{\textrm{Average Bike Count of London}}{\textrm{Average Bike Count of City}}$. This was done so that the distribution of bike counts would be on the same scale as the London data set, so that the distributions could be compared more directly. 
 
-```{r, echo =FALSE, warning=FALSE, message = FALSE}
+```{r, echo =FALSE, warning=FALSE, message = FALSE, fig.cap="Density plots showing the distribution of bike count rental observations for each training and testing set."}
 ggplot(all_data, aes(x = Bike_count2)) + 
   geom_histogram(fill = "dark blue", aes(y = stat(density))) + 
   facet_wrap(~city2) + theme_classic() + xlim(0,30000) + 
@@ -423,7 +423,7 @@ In conclusion, factors including hours, holidays, min temperature, max temperatu
 
 In addition to the conclusion above, we also have some findings that need to discuss more. The RMSE for Seoul is much larger than that in the other two cities. The results on the test dataset are much worse than in the training dataset. This may imply that our model may have some limitations across cities. The possible reason is that in our model, we only considered the effects of days, hours and weather on the bike count but did not take information about cities into consideration (e.g. population, GDP), which may cause bias in prediction.
 
-To get a better understanding on how our model predict on the sequences of bike count in different dataset, we plotted out the predicted bike count and the ground truth for each of the four datasets. Below is the longitudinal plots of the predicted bike count and the true bike count in the three cities.
+To get a better understanding on how our model predict on the sequences of bike count in different dataset, we plotted out the predicted bike count and the ground truth for each of the four datasets. In Figure 7 below, longitudinal plots of the predicted bike count and the true bike count in the three cities are shown.
 
 ```{r,include=FALSE}
 # function to output the prediction results
@@ -458,8 +458,7 @@ df_london_test = get_prediction(model_glmm=glmm_fit,data=london_test,scale_data=
 df_dc = get_prediction(model_glmm=glmm_fit,data=dc,scale_data=TRUE)
 ```
 
-```{r, warning=FALSE,fig.align='center',message=FALSE}
-#install.packages("ggpubr")
+```{r, warning=FALSE,fig.align='center',message=FALSE, fig.cap="Longitudinal plots of predicted (black) vs. true (red) bike count in (A) the Seoul test set, (B) the London training set, (C) the London test set, and (D) the DC test set."}
 library(ggpubr)
 library(ggplot2)
 p1=
@@ -492,9 +491,9 @@ ggarrange(p1, p2, p3, p4,
 
 ```
 
-To understand the bias and variance of our prediction results, we also drew the boxplots of predicted bike count and the true bike count of the four datasets. The plots are shown below:
+To understand the bias and variance of our prediction results, we also drew the boxplots of predicted bike count and the true bike count of the four datasets (Figure 8).
 
-```{r, warning=FALSE,fig.align='center'}
+```{r, warning=FALSE,fig.align='center', fig.cap="Boxplots of predicted vs. true bike count in (A) the Seoul test set, (B) the London training set, (C) the London test set, and (D) the DC test set."}
 library(tidyverse)
 library(dplyr)
 boxplot_seoul = df_seoul %>% 
