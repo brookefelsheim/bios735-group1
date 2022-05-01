@@ -160,7 +160,7 @@ Where ${ \mu_{ij}^{(t)} = e^{ x_{ij}^T \beta^{(t)}   + b_i  } }$ and ${f(b_i |y,
 \end{split}
 \end{equation}
 
-If we could sample from this posterior distribution of $b_i$, we could approximate this integral using a montecarlo approach. So,
+If we could sample from this posterior distribution of $b_i$, we could approximate this integral using a monte carlo approach. So,
 
 
 \[Q(\theta, \beta, \sigma^2_\gamma|y, \theta^{(t)}, \beta^{(t)}, {\sigma^2_\gamma}^{(t)}) 
@@ -169,7 +169,7 @@ If we could sample from this posterior distribution of $b_i$, we could approxima
 
 Where $b_{ik}$ is one of the $M$ samples of the posterior distribution $b_i$ and ${ \mu_{ijk}^{(t)} = e^{ x_{ij}^T \beta^{(t)}   + b_{ik}  } }$.
 
-To sample from this distribution posterior distribution of $b_i$, we employed the metropolis hastings algorithm with a random walk. So at set $t$, for each new $b_i$, we considered $b_i^* = b_i^{(t)} + \epsilon$ where $\epsilon \sim U\left(-\frac{1}{4}, \frac{1}{4}\right)$. From this, the Metropolis Hastings ratio $R(b_i^{(t)}, b_i^*)$ was determined whether or not to accept this new $b_i^*$. For each new $b_I^*$
+To sample from this distribution posterior distribution of $b_i$, we employed the metropolis hastings algorithm with a random walk. So at set $t$, for each new $b_i$, we considered $b_i^* = b_i^{(t)} + \epsilon$ where $\epsilon \sim U\left(-\frac{1}{4}, \frac{1}{4}\right)$. From this, the Metropolis Hastings ratio $R(b_i^{(t)}, b_i^*)$ was determined whether or not to accept this new $b_i^*$. For each new $b_i^*$
 
 \[R(b_i^{(t)}, b_i^*) = \frac{f(y_{ij}|\theta, \beta, \sigma^2_\gamma,b_i^*)f(b_i^* | \sigma^2_\gamma)}{f(y_{ij}|\theta, \beta, \sigma^2_\gamma,b_i^{(t)})f(b_i^{(t)} | \sigma^2_\gamma)}\]
 
