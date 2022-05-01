@@ -34,7 +34,7 @@ For our project, we were interested in predicting the number of bikes rented wit
 The first dataset we use is a London bike sharing demand dataset downloaded from Kaggle^[https://www.kaggle.com/datasets/hmavrodiev/london-bike-sharing-dataset] and provided by Transport for London^[https://cycling.data.tfl.gov.uk]. This dataset contains hourly bike rental count observations over two years, from Jan 04 2015 - Jan 03 2017. The first full consecutive year of data was used as the training set in the analysis, and the second full consecutive year of data was held out as a test set.     
 The second dataset we use is a Seoul bike sharing demand dataset downloaded from the UCI Machine Learning Repository^[https://archive.ics.uci.edu/ml/datasets/Seoul+Bike+Sharing+Demand] and provided by the Seoul Metropolitan Government^[https://data.seoul.go.kr]. This dataset contains hourly bike rental counts over one year, from Dec 1 2017 - Nov 30 2018. This was used as an independent test set.     
 The third dataset we use is a Washington, D.C. bike sharing demand dataset downloaded from Kaggle^[https://www.kaggle.com/datasets/marklvl/bike-sharing-dataset] and provided by Capital Bikeshare^[https://ride.capitalbikeshare.com/system-data]. This dataset contains hourly bike rental counts over two years, from Jan 01 2011 - Dec 31 2012. This was used as an independent test set.     
-Each dataset contained hourly observations of bike rental count data. To simplify our analysis, we chunked the hourly data into three time blocks: [0:00 - 8:00), [8:00 - 16:00), and [16:00 - 24:00). Additionally, because temperature and humidity can be correlated with time of day, we chose to use the maximum and minimum daily temperature and humidity measurements for each 8-hour data point in order to avoid any issues of colinearity.     
+Each dataset contained hourly observations of bike rental count data. To simplify our analysis, we chunked the hourly data into three time blocks: [0:00 - 8:00), [8:00 - 16:00), and [16:00 - 24:00). To calculate the total bike count, we summed the hourly bike counts for each of the time blocks. Additionally, because temperature and humidity can be correlated with time of day, we chose to use the maximum and minimum daily temperature and humidity measurements for each 8-hour data point in order to avoid any issues of colinearity.     
 We created an R package named `bikeSharing` that includes methods for training and evaluating the negative binomial glmm and random forest models, as well as the processed source data from all three sets.     
 The below code can be used to install the package and load the package library. The zipped package source data, `bikeSharing_1.0.0.tar.gz` can be found in the Github repository for our project^[https://github.com/brookefelsheim/bios735-group1].     
 ```{r echo=TRUE}
@@ -77,7 +77,7 @@ london_test <- london[london$Year == "Year 2",]
 
 ## Negative Binomial Generalized Linear Mixed Model
 
-Let $y_{ij}$ be the number of bikes rented at hour chunk $j$ of day $i$. Thus $i$ ranges from 1 to 365, and $j$ ranges from 1 to 3, corresponding to hour chunks [00:00 - 8:00, 8:00-16:00, 16:00-24:00]. We assume that the number of bikes rented for a given hour chunk within a specific day follows a negative binomial distribution, so $Y_{ij} \sim NB(\mu_{ij}, \theta)$ using the Hilbe parameterization, so:
+Let $y_{ij}$ be the number of bikes rented at hour chunk $j$ of day $i$. Thus $i$ ranges from 1 to 365, and $j$ ranges from 1 to 3, corresponding to hour chunks [00:00 - 8:00), [8:00-16:00), [16:00-24:00). We assume that the number of bikes rented for a given hour chunk within a specific day follows a negative binomial distribution, so $Y_{ij} \sim NB(\mu_{ij}, \theta)$ using the Hilbe parameterization, so:
 
 \begin{equation}
 P(Y_{ij} = y_{ij}|\mu_{ij}, \theta) =  \frac{\Gamma(y_{ij} + \theta)}{\Gamma(y_{ij} + 1)\Gamma(\theta)} \left( \frac{\theta}{\theta + \mu_{ij}} \right)^{\theta} \left(\frac{\mu_{ij}}{\theta +  \mu_{ij}} \right)^{y_{ij}}
@@ -104,9 +104,9 @@ Max_Humidity$_{i}$,
 Wind_Speed$_{ij}$,
 Rain_or_Snow$_{ij})^T$.
 
-HourChunk$_{ij}$ is a categorical variable corresponding to the hour chunk $j$ of day $i$, with the reference hour chunk being [0:00,8:00), Weekend$_{i}$ is a binary variable with 1 if day $i$ is a weekend, 0 if it is not, 
+HourChunk$_{ij}$ is a categorical variable corresponding to the hour chunk $j$ of day $i$, with the reference hour chunk being [0:00, 8:00), Weekend$_{i}$ is a binary variable with 1 if day $i$ is a weekend, 0 if it is not. 
 Holiday$_{i}$ is a binary variable with 1 if day $i$ is a holiday, 0 if it is not. Season$_{i}$ is a categorical variable corresponding to which season day $i$ is in, with the reference season being Autumn. The Min_Temperature$_{i}$ and Max_Temperature$_{i}$ are the minimum and maximum temperature of day $i$, respectively. Similarly, 
-The Min_Humidity$_{i}$ and Max_Humidity$_{i}$ are the minimum and maximum humidity of day $i$, respectively. Wind_Speed$_{ij}$ is the average wind speed of hour chunk $j$ of day $i$. Rain_or_Snow$_{i}$ is a binary variable with 1 if during day $i$ hour chunk $j$ there is any rain or snow, 0 if there is not. Thus $\beta = (\beta_0, \beta_1, \beta_2, \beta_3, \beta_4, \beta_5, \beta_6, \beta_7, \beta_8,\beta_9, \beta_{10}, \beta_{11}, \beta_{12}, \beta_{13})'$.  
+the Min_Humidity$_{i}$ and Max_Humidity$_{i}$ are the minimum and maximum humidity of day $i$, respectively. Wind_Speed$_{ij}$ is the average wind speed of hour chunk $j$ of day $i$. Rain_or_Snow$_{i}$ is a binary variable with 1 if during day $i$ hour chunk $j$ there is any rain or snow, 0 if there is not. Thus $\beta = (\beta_0, \beta_1, \beta_2, \beta_3, \beta_4, \beta_5, \beta_6, \beta_7, \beta_8,\beta_9, \beta_{10}, \beta_{11}, \beta_{12}, \beta_{13})'$.  
 
 In Equation (2), $b_i$ is the unobserved random effect that the day $i$ has on the number of rented bikes at any given hour chunk. It is assumed that $b_i \sim N(0,\sigma^2_\gamma)$.
 
@@ -184,10 +184,14 @@ b_i^{(t)} &\text{ otherwise}
 
 
 For the M-step, we will maximize the Q-function with respect to ${\theta, \beta, \sigma^2_\gamma}$. The Nelder-Mead method was used to optimize all of these parameters, this was because Nelder-Mead in the M-step does not require 1st or 2nd derivatives and it is robust.
-After this, the E-step is repeated for the next iteration, followed by the M-step again until the estimates for ${\theta, \beta, \sigma^2_\gamma}$ converge.
+After this, the E-step and M-step are repeated for each iteration until the estimates for ${\theta, \beta, \sigma^2_\gamma}$ converge.
 
 In our package `bikeSharing`, we have created a function `MCEM_algorithm` that will fit a
 Negative Binomial Generalized Linear Mixed Model to the data using the MCEM algorithm described above. 
+
+The `MCEM_algorithm` function takes as input `beta_initial`, which are initial guesses for the $\beta$ vector. `theta_initial` which is the initial guess for the $\theta$ vector. `s2gamma_initial` which is the initial guess for the $\sigma^2_\gamma$ vector. `M` which is the number of posterior $b_i$'s to be sampled for the Monte Carlo integration. `burn.in` which is the number of posterior $b_i$'s to be thrown out to account for the time it takes for the chain to converge. `tol` which is the percent difference between the Q functions of two iteration to reach convergence. `maxit` which is the maximum number of iterations allowed. `data`, which is the data to which the negative binomial GLMM model should be fit to.
+
+
 ```{r eval=FALSE, include=TRUE, echo=TRUE}
 set.seed(1)
 glmm_fit <- MCEM_algorithm( beta_initial = c(8.3, 1.5, 1.5, -0.25, -0.50, 0, 
@@ -222,15 +226,15 @@ plot(x, type="l", xlab="Iteration", ylab = "theta", main="Values of theta in eac
 points(x,pch=16)
 ```
      
-As we can see in Figure 2, the estimation of $\theta$, $\hat{\theta}$ converges quickly and from $9^{th}$ iteration, it starts to float near the true $\theta$.
+As we can see in Figure 2, the estimation of $\hat{\theta}$ converges quickly and from $9^{th}$ iteration, it starts to float near the true $\theta$.
 
-The size of the coefficients of the binary and categorical variables can be compared directly to determine how important that variable is in determining bike count. As we can see from above, Hour Chunks [8,16) and Hour Chunks [16,24) are the covariates with the largest coefficients in magnitude, implying that they play a very big role in determining the number of bikes rented. As we can see, between 8:00 - 16:00 and 16:00 - 24:00, many more people rent bikes in london than between 0:00 - 8:00. This result is not surprising. Weekend and Holiday are the next binary variables with the largest coefficients in magnitude. Both holidays and weekends have a similar effect on bike count; less people rent bikes on holidays and weekend. Additionally, rain or snow causes people to rent less bikes. Winter has a larger effect on bike counts than spring or summer, with significantly less people renting bikes in winter than autumn. Less bikes are rented in spring than autumn although the effect is not as large as the effect of winter. Summer leads to an increase in bike rentals compared to autumn. Min and Max Temperature do not play as significant of a role in determining the number of bike counts, but this effect may be masked by the effects of the season. Humidity does not seem to play a large role in determining bike counts. Wind_speed has a small negative coefficient, meaning that with increased wind speed, less people rent bikes. 
+The size of the coefficients of the binary and categorical variables can be compared directly to determine how important that variable is in determining bike count. As we can see from above, Hour Chunks [8,16) and Hour Chunks [16,24) are the covariates with the largest coefficients in magnitude, implying that they are very important in determining the number of bikes rented. As we can see, between 8:00 - 16:00 and 16:00 - 24:00, many more people rent bikes in London than between 0:00 - 8:00. This result is not surprising. Weekend and Holiday are the next binary variables with the largest coefficients in magnitude. Both holidays and weekends have a similar effect on bike count; less people rent bikes on holidays and weekends. Additionally, rain or snow causes people to rent less bikes. Winter has a larger effect on bike counts than spring or summer compared to autumn, with significantly less people renting bikes in winter than autumn. Less bikes are rented in spring than autumn although the effect is not as large as the effect of winter. Summer leads to an increase in bike rentals compared to autumn. Min and Max Temperature do not play as significant of a role in determining the number of bike counts, but this effect may be masked by the effects of the season. Humidity does not seem to play a large role in determining bike counts. Wind speed has a small negative coefficient, meaning that with increased wind speed, less people rent bikes. 
 
 \pagebreak
 
 ## Machine learning models
 
-Next, we applied two machine learning methods to predict the bike count. The first model we used is a conditional inference tree. In traditional partitioning, all possible splits are investigated to find the best split, which results in overfitting and selection. The conditional inference tree embeds the partition step with a permutation test, thereby enabling this method to be robust to covariates of different scales. Furthermore, it is capable of stopping when no significant correlation exists between the covariates and the response (Hothorn, Hornik, and Zeileis 2006). We emplyed the ctree funciton in the partykit to fit the conditional inference tree.
+Next, we applied two machine learning methods to predict the bike count. The first model we used is a conditional inference tree. In traditional partitioning, all possible splits are investigated to find the best split, which results in overfitting and selection. The conditional inference tree embeds the partition step with a permutation test, thereby enabling this method to be robust to covariates of different scales. Furthermore, it is capable of stopping when no significant correlation exists between the covariates and the response (Hothorn, Hornik, and Zeileis 2006). We employed the ctree funciton in the partykit to fit the conditional inference tree.
 
 We visualized the three layer conditional inference tree in order to verify the relationship between bike count and variables (Figure 2). It is apparent that people tend to rent fewer bikes between midnight and 8 am. Maximum temperatures and humidity also affect bike rental rates. The splits that are employed in the conditional reference tree provide well reasoned explanations of the data structure, which means high accuracy predictions are made.
 
@@ -291,7 +295,7 @@ library(reprtree)
 reprtree:::plot.getTree(model1,k=sample(1:500,1),depth=4,cex=1,font=2)
 ```
 
-Random forest sample trees share similar splits with conditional inference trees (Figure 4). The estimated bike rental count is much higher in the hour chunks that are not 0-8am. Additionally, the estimated count is high when the temperature is more than 22.25 degrees.
+Random forest sample trees share similar splits with conditional inference trees (Figure 4). The estimated bike rental count is much higher in the hour chunks that are not 0-8 am. Additionally, the estimated count is high when the temperature is more than 22.25 degrees.
 
 ### Variable Importance in machine learning models
 To investigate which variables affect the prediction most, we calculate the importance of the variables in the conditional inference tree and the random forest. In conditional inference tree, we calculated the mean decrease in accuracy when deleting a variable (Table 1).
@@ -308,13 +312,13 @@ In random forest, we calculate the increase in MSE when deleting a variable (Fig
 plot_rf_importance(london_train)
 ```
 
-The top important variables of the conditional inference tree and random forest are similar. The hour chunk is the most important variable in both models. Additionally, the maximum temperature has a significant impact on the model prediction. Additional details of the variables are discussed in the discussion section. We further compare the performance of random forest and conditional inference tree using the second year bike renting data in London. Conditional inference tree results in a $R^2=0.81$ and random forest has $R^2=0.91$. Due the similarity in these two models, we selected random forest tree in the further comparison.
+The top important variables of the conditional inference tree and random forest are similar. The hour chunk is the most important variable in both models, which agrees with the results from the negative binomial GLMM method. For both models, the next most important variable is the Maximum temperature, which is different from the negative GLMM model. Additional details of the variables are discussed in the discussion section. We further compare the performance of random forest and conditional inference tree using the second year bike renting data in London. Conditional inference tree results in a $R^2=0.81$ and random forest has $R^2=0.91$. Due the similarity in these two models and the better fit of the random forest model to the training set, we selected random forest tree for use in further comparison. 
 
 ## Methods for Model Fit Assessment
 
 The accuracy of the random forest model and the negative binomial GLMM model will be assessed by using the models to predict the values of bike counts for for the London (training set), London (test set), Seoul, and DC data sets. The predicted values will be compared to the actual values to determine how well the models predict the bike counts for a city on a given day and time. 
 
-Three metrics of accuracy will be calculated: Root Mean Squared Error (RMSE), Mean Absolute Error (MAE), and Coeeficient fo Determination ($R^2$). They will be calculated using the following formulas.
+Three metrics of accuracy will be calculated: Root Mean Squared Error (RMSE), Mean Absolute Error (MAE), and Coeficient fo Determination ($R^2$). They will be calculated using the following formulas.
 
 * RMSE = $\sqrt{\frac{1}{N}\sum_{i=1}^N(y_i -\hat{y_i})^2}$
 * MAE = $\frac{1}{N}\sum_{i=1}^N|y_i -\hat{y_i}|$
