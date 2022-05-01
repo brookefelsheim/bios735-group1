@@ -1,7 +1,7 @@
 ---
-title: "Final Report"
+title: \vspace{-1.25cm} Final Report \vspace{-0.5cm}
 author: "Group 1: Jiawen Chen, Brooke Felsheim, Elena Kharitonova, Xinjie Qian, and Jiarui Tang"
-date: "4/30/2022"
+date:  \vspace{-0.3cm} 4/30/2022" \vspace{-0.3cm}
 output: pdf_document
 ---
 
@@ -71,6 +71,7 @@ london_train <- london[london$Year == "Year 1",]
 london_test <- london[london$Year == "Year 2",]
 ```
 
+\pagebreak
 
 # Methods
 
@@ -188,6 +189,7 @@ After this, the E-step is repeated for the next iteration, followed by the M-ste
 In our package `bikeSharing`, we have created a function `MCEM_algorithm` that will fit a
 Negative Binomial Generalized Linear Mixed Model to the data using the MCEM algorithm described above. 
 ```{r eval=FALSE, include=TRUE, echo=TRUE}
+set.seed(1)
 glmm_fit <- MCEM_algorithm( beta_initial = c(8.3, 1.5, 1.5, -0.25, -0.50, 0, 
                                              0, -0.25, 0, 0, 0, 0, 0, -0.25),
                          theta_initial = 10,
@@ -204,11 +206,13 @@ glmm_fit <- MCEM_algorithm( beta_initial = c(8.3, 1.5, 1.5, -0.25, -0.50, 0,
 cat report_files/london_cat_output.txt
 ```
 
+The output of the `MCEM_algorithm` function contains the list of `beta`, the final iteration of the fitted $\hat{\beta}$ vector. It contains `s2gamma` which is $\hat{\sigma^2_\gamma}$ at the final iteration. `theta` which is the final iteration of $\hat{\theta}$. `eps` which is the difference between this iteration and the last. `qfunction` which is the value of the Q function at the final iteration. `day_ranef` which contains all of the fitted $b_i$'s. `iter` is the iteration at which convergence was reached.
+
 ```{r echo=TRUE}
 str(glmm_fit)
 ```
 
-```{r echo=FALSE, fig.cap= "Values of theta in each iteration of the run of `MCEM_algorithm` on the London training set."}
+```{r echo=FALSE, fig.cap= "Values of theta in each iteration of the run of `MCEM_algorithm` on the London training set.", fig.height=4}
 
 x <- c(10.380,12.726,14.086,16.304,17.007,17.768,18.032,17.536, 18.146,18.152,17.895,17.985,18.295,18.380,18.497,18.442,18.532,18.638,18.449,18.310,18.560,18.519,18.422)
 
@@ -219,6 +223,10 @@ points(x,pch=16)
 ```
      
 As we can see in Figure 2, the estimation of $\theta$, $\hat{\theta}$ converges quickly and from $9^{th}$ iteration, it starts to float near the true $\theta$.
+
+The size of the coefficients of the binary and categorical variables can be compared directly to determine how important that variable is in determining bike count. As we can see from above, Hour Chunks [8,16) and Hour Chunks [16,24) are the covariates with the largest coefficients in magnitude, implying that they play a very big role in determining the number of bikes rented. As we can see, between 8:00 - 16:00 and 16:00 - 24:00, many more people rent bikes in london than between 0:00 - 8:00. This result is not surprising. Weekend and Holiday are the next binary variables with the largest coefficients in magnitude. Both holidays and weekends have a similar effect on bike count; less people rent bikes on holidays and weekend. Additionally, rain or snow causes people to rent less bikes. Winter has a larger effect on bike counts than spring or summer, with significantly less people renting bikes in winter than autumn. Less bikes are rented in spring than autumn although the effect is not as large as the effect of winter. Summer leads to an increase in bike rentals compared to autumn. Min and Max Temperature do not play as significant of a role in determining the number of bike counts, but this effect may be masked by the effects of the season. Humidity does not seem to play a large role in determining bike counts. Wind_speed has a small negative coefficient, meaning that with increased wind speed, less people rent bikes. 
+
+\pagebreak
 
 ## Machine learning models
 
@@ -278,9 +286,8 @@ rf_fit <- train_random_forest(data = london_train)
 set.seed(735)
 model1 <- randomForest(Bike_count ~ Hour_chunks + Min_temp + Max_temp + Min_humidity + Max_humidity + Wind_speed+Rain_or_snow + Is_weekend + Season + Is_holiday+Date,data = train_factor, importance=TRUE, ntree=500,mtry = 7)
 
-#devtools::install_github('araastat/reprtree')
+#devtools::install_github('skinner927/reprtree')
 library(reprtree)
-
 reprtree:::plot.getTree(model1,k=sample(1:500,1),depth=4,cex=1,font=2)
 ```
 
@@ -295,27 +302,30 @@ knitr::kable(ctree_mda,caption = "Mean decrease in accuracy of variables in the 
 
 In random forest, we calculate the increase in MSE when deleting a variable (Figure 5). The code to do this was implemented as a function `plot_rf_importance` in the `bikeSharing` R package. 
 
+\pagebreak
+
 ```{r echo=TRUE, message=FALSE, warning=FALSE,fig.width=5,fig.height=4,fig.align='center',fig.cap="Feature importance in the random forest model"}
 plot_rf_importance(london_train)
 ```
 
 The top important variables of the conditional inference tree and random forest are similar. The hour chunk is the most important variable in both models. Additionally, the maximum temperature has a significant impact on the model prediction. Additional details of the variables are discussed in the discussion section. We further compare the performance of random forest and conditional inference tree using the second year bike renting data in London. Conditional inference tree results in a $R^2=0.81$ and random forest has $R^2=0.91$. Due the similarity in these two models, we selected random forest tree in the further comparison.
 
+## Methods for Model Fit Assessment
 
+The accuracy of the random forest model and the negative binomial GLMM model will be assessed by using the models to predict the values of bike counts for for the London (training set), London (test set), Seoul, and DC data sets. The predicted values will be compared to the actual values to determine how well the models predict the bike counts for a city on a given day and time. 
 
-# Results 
-
-In order to assess the accuracy of the models, the models were used to predict the values of bike counts for for the London (training set), London (test set), Seoul, and DC data sets. The predicted values were compared to the actual values to determine how well the model predicted the bike counts for a city on a given day and time. 
-
-Three metrics of accuracy were calculate: Root Mean Squared Error (RMSE), Mean Absolute Error (MAE), and Coeeficient fo Determination ($R^2$). They were calculated using the following formulas.
+Three metrics of accuracy will be calculated: Root Mean Squared Error (RMSE), Mean Absolute Error (MAE), and Coeeficient fo Determination ($R^2$). They will be calculated using the following formulas.
 
 * RMSE = $\sqrt{\frac{1}{N}\sum_{i=1}^N(y_i -\hat{y_i})^2}$
 * MAE = $\frac{1}{N}\sum_{i=1}^N|y_i -\hat{y_i}|$
 * ${ R^2  = 1 - \frac{\sum_{i=1}^N(y_i -\hat{y_i})^2}{\sum_{i=1}^N(y_i -\bar{y_i})^2}}$
 
-Since Seoul and DC have a different population size than London, it is posible that the predicted value based on the trained london data set and the actual bike count may be on different scale. In order to account for this, the predicted values for the Seoul and DC data sets were scaled by $\frac{\textrm{Average Bike Count of City}}{\textrm{Average Bike Count of London}}$, so that the predicted value for DC and Seoul would be on the same sclae as the actual observed bike counts. 
+\pagebreak
 
-This assessment of model fit for the GLMM model was wrapped into the function `glmm_model_fit()`. It takes as input a negative binomial model `model_glmm` which is the output of the `MCEM_algorithm` function, `data`, a data set for it to be applied to, `scale_to_reference_mean` to determine whether the predicted values should be scaled, and `reference` which is the city that the model was fit to. The output of this function is a vector of RMSE, MAE, and $R^2$ values. We apply this function to the london training, the london test, the dc data, and the seoul data.
+# Results 
+Both the negative binomial GLMM and the random forest model were used to predict the the values of bike counts for for the London (training set), London (test set), Seoul, and DC data sets. Since Seoul and DC have a different population size than London, it is possible that the predicted value based on the trained London data set and the actual city bike count may be on different scale. In order to account for this, the predicted values for the Seoul and DC data sets were scaled by $\frac{\textrm{Average Bike Count of City}}{\textrm{Average Bike Count of London}}$, so that the predicted value for DC and Seoul would be on the same scale as the actual observed bike counts. 
+
+The assessment of model fit for the GLMM model was wrapped into the function `glmm_model_fit()`. It takes as input a negative binomial model `model_glmm` which is the output of the `MCEM_algorithm` function, `data`, the data set for which bike counts will be predicted, `scale_to_reference_mean` to determine whether the predicted values should be scaled, and `reference` which is the city that the model was fit to. The output of this function is a vector of RMSE, MAE, and $R^2$ values. We apply this function to the London training, the London test, the DC data, and the Seoul data.
 
 ```{r echo=TRUE}
 glmm_model_fit(model_glmm = glmm_fit, data = london_train, scale_to_reference_mean = "no", 
@@ -328,10 +338,10 @@ glmm_model_fit(glmm_fit, data = seoul, scale_to_reference_mean = "yes",
                reference = london)
 ```
 
-Unsurprisingly, we see that the GLMM model fits the london test data set the best out of the test sets. There does not seem to be a large difference between the $R^2$ values for the DC and Seoul data set, however the DC data set has a smaller RMSE and MAE, implying that the data may be less spread out in the DC data set. 
+Unsurprisingly, we see that the GLMM model fits the London test data set the best out of the test sets. There does not seem to be a large difference between the $R^2$ values for the DC and Seoul data set, however the DC data set has a smaller RMSE and MAE, implying that the DC bike counts may be less spread out than the Seoul bike counts. 
 
 
-A similar assessment for the fit of the random forests model was wrapped into the function `rf_model_fit()`. It takes as input a random forest model `model` which is the output of the `MCEM_algorithm` function, `data`, a data set for it to be applied to, `scale_to_reference_mean` to determine whether the predicted values should be scaled, and `reference` which is the city that the model was fit to. The output of this function is a vector of RMSE, MAE, and $R^2$ values. We apply this function to the london training, the london test, the dc data, and the seoul data.
+A similar assessment for the fit of the random forests model was wrapped into the function `rf_model_fit()`. It takes as input a random forest model, `model`, which is the output of the `train_random_forest` function, `data`, a data set for which bike counts will be predicted applied to, `scale_to_reference_mean` to determine whether the predicted values should be scaled, and `reference` which is the city that the model was fit to. The output of this function is a vector of RMSE, MAE, and $R^2$ values. We apply this function to the London training, the London test, the DC data, and the Seoul data.
 
 
 ```{r echo=TRUE}
@@ -344,6 +354,11 @@ rf_model_fit(rf_fit, data = dc, scale_to_reference_mean = "yes",
 rf_model_fit(rf_fit, data = seoul, scale_to_reference_mean = "yes", 
              reference = london)
 ```
+
+Overall, the random forest model performed better than the negative binomial GLMM in all cases. The random forest model fits the initial training data significantly better than the negative binomial GLMM does. This is not surprising as random forests can account for interactions between covariates while the GLMM model does not. Additionally, the random forest model fits the London test data set better than the GLMM model. Overall, both models seem to perform relatively well in predicting London bike rental counts of the next year (the London training dataset). The random forest model performs significantly better than the GLMM model for DC, however both models perform relatively poorly for the Seoul data set. Thus, it seems that both the GLMM model and the random forest model can predict bike counts in the same city as the testing data set relatively well, however both models do not extrapolate well to other cities. 
+
+To determine why this is the case, the average of the covariates for each of the cities was examined to see if there was a major difference between the covariates between cities. (Table 2 below)
+
 
 
 
@@ -371,23 +386,36 @@ all_data$city = factor(all_data$city,
 all_data$city2 = factor(all_data$city2, 
                         levels = c("London - Train", "London - Test", 
                                    "DC - Scaled", "Seoul - Scaled"))
-ggplot(all_data, aes(x = Bike_count2)) + 
-  geom_histogram(fill = "dark blue", aes(y = stat(density))) + 
-  facet_wrap(~city) + theme_classic() + xlim(0,30000) + 
-  labs(title = "Distribution of Bike Counts for Cities", 
-       y = "Density", x = "Bike Count")
+all_data$Is_holiday = as.numeric(all_data$Is_holiday)
+all_data$Rain_or_snow = as.numeric(all_data$Rain_or_snow)
+summary = all_data %>% group_by(city2) %>% summarise(
+  "Average Number of Holidays" = mean(Is_holiday, na.rm = TRUE),
+  "Average Min Temp" = mean(Min_temp),
+  "Average Max Temp" = mean(Max_temp),
+  "Average Min Humidity" = mean(Min_humidity),
+  "Average Max Humidity" = mean(Max_humidity),
+  "Average Wind Speed" = mean(Wind_speed),
+  "Average Rain/Snow Days" = mean(Rain_or_snow)
+)
+summary$city2 = c("London - Train", "London - Test", "DC", "Seoul")
+colnames(summary)[1] = "City"
+knitr::kable(summary,caption = "Average of Covariates From All Data Sets")
+```
+
+As we can see, there does not appear to be any major differences in the average of the covariates between the cities. This implies that the issue in applying the fitted models to the new cities is not the range of the covariates, such as the temperature range, humidity range, wind speed range, the number of holidays or the number of rain/snow days. Therefore, to further determine the cause of the poor fit of the model in DC and Seoul, the distribution of the bike counts is examined for each of the data sets below. The DC bike counts and the seoul bike counts were scaled by  $\frac{\textrm{Average Bike Count of London}}{\textrm{Average Bike Count of City}}$. This was done so that the distribution of bike counts would be on the same scale as the London data set, so that the distributions could be compared more directly. 
+
+```{r, echo =FALSE, warning=FALSE, message = FALSE}
 ggplot(all_data, aes(x = Bike_count2)) + 
   geom_histogram(fill = "dark blue", aes(y = stat(density))) + 
   facet_wrap(~city2) + theme_classic() + xlim(0,30000) + 
   labs(title = "Distribution of Bike Counts for Cities", 
        y = "Density", x = "Bike Count")
-```
-```{r echo=TRUE}
-mean(london_test$Bike_count)
-mean(london_train$Bike_count)
+
 ```
 
+The London training and test set have a very similar distribution, which explains why both the random forest model and the negative binomial glmm model predict the bike counts well for the London test data set. The DC bike counts have a more similar distribution to the London data set than the Seoul bike counts do, which is likely the reason why the random forest model performs better for the DC data compared to the Seoul data. However, overall the distributions between the Seoul bike counts and the DC bike counts are not too different from the London data set. This implies that the effects that the covariates have on bike counts are likely different from city to city. For example, in London, more people ride bikes in the Summer than in the autumn, likely due to the fact that it is warmer. However it is possible that in Seoul or DC, the relationship is the opposite and more people ride bikes in Autumn compared to the Summer because it is too hot in the summer to ride a bike. Thus, since it seems likely that each covariate may influence bike counts differently in different cities, which means our model is not particularly useful in predicting bike counts in cities other than the one that it is trained on. This may be a result of the fact that our cities are very different from each other since they are all from different countries. Further work in measuring bike counts in different cities within a country needs to be done to determine how well our model performs for different cities within the same country as the city that the model was trained on.
 
+\pagebreak
 
 # Discussion and Conclusion
 
